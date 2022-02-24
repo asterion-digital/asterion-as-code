@@ -1,0 +1,2 @@
+config:
+  pulumi:template: https://github.com/pulumi/examples/tree/master/kubernetes-py-helm-release-wordpress
