@@ -1,0 +1,35 @@
+#+TITLE: Asterion infra deployment
+#+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
+#+DATE: <2022-03-04 Fri>
+
+* Setup environment
+
+#+NAME: Setup environment
+#+begin_src tmate
+# Initialise the stack
+pulumi stack init asterion-digital/dev
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install pip requirements
+pip install -r requirements.txt
+#+end_src
+
+
+* Create configuration
+
+#+NAME: Create required pulumi configuration
+#+begin_src tmate
+export keyname="asterion"
+cat ~/.ssh/${keyname}.pub | pulumi config set publickey
+cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
+#+end_src
+
+
+* Create stack
+
+#+NAME: Bring the stack up
+#+begin_src tmate
+pulumi up -y
+#+end_src

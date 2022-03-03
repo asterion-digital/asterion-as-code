@@ -1,0 +1,6 @@
+name: asterion-aws-infra
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: A pulumi program to deploy asterion infra on aws.

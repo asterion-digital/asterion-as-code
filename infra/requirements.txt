@@ -1,0 +1,4 @@
+pulumi
+pulumi-aws
+pulumi-command
+requests
