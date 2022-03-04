@@ -1,0 +1,24 @@
+#+TITLE: Deploy asterion wordpress
+#+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
+#+DATE: <2022-03-04 Fri>
+
+* Setup environment
+
+#+NAME: Export kubeconfig
+#+begin_src tmate
+export KUBECONFIG=../infra/asterion-infra-kubeconfig
+#+end_src
+
+* Create stack
+
+#+NAME: Bring pulumi stack up
+#+begin_src tmate
+pulumi up -y
+#+end_src
+
+* Teardown stack
+
+#+NAME: Teardown down the pulumi stack
+#+begin_src tmate
+pulumi destroy -y
+#+end_src

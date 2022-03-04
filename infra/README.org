@@ -27,9 +27,23 @@ cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
 #+end_src
 
 
-* Create stack
+* Create stack and retrieve kubeconfig
 
 #+NAME: Bring the stack up
 #+begin_src tmate
 pulumi up -y
+#+end_src
+
+
+#+NAME: Retrieving kubeconfig
+#+begin_src tmate
+# Ensure kube file exists
+mkdir ~/.kube
+
+# Output kubeconfig to file
+pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
+
+# Sed replace the kubeconfig ip
+ip=$(pulumi stack output "Infra server public ip")
+sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
 #+end_src

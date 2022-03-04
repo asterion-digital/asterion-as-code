@@ -5,6 +5,7 @@ import requests
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
+from pulumi import Output
 
 # Initialise configuration
 config = pulumi.Config()
@@ -90,15 +91,24 @@ connection = command.remote.ConnectionArgs(host=instance.public_ip, user='ubuntu
 # Install required components
 install_helm = command.remote.Command('asterion-infra-install-helm',
     connection=connection,
-                                      create='curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash',
+    create='curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash',
     opts=pulumi.ResourceOptions(depends_on=[instance]),
 )
 
+install_cmd = Output.concat("curl -sfL https://get.k3s.io | sh -s - server --tls-san ", instance.public_ip, " --write-kubeconfig-mode 644 --no-deploy traefik --no-deploy servicelb")
 install_k3s = command.remote.Command('asterion-infra-install-k3s',
     connection=connection,
-    create='curl -sfL https://get.k3s.io | sh -s - server --write-kubeconfig-mode 644 --no-deploy traefik --no-deploy servicelb > ~/.k3s_log.log',
-    opts=pulumi.ResourceOptions(depends_on=[install_helm])
+    create=install_cmd.apply(lambda v: v),
+    opts=pulumi.ResourceOptions(depends_on=[instance])
 )
+
+# Export the cluster kubeconfig
+retrieve_kubeconfig = command.remote.Command('asterion-infra-retrieve-kubeconfig',
+    connection=connection,
+    create='cat /etc/rancher/k3s/k3s.yaml',
+    opts=pulumi.ResourceOptions(depends_on=[install_k3s])
+)
+pulumi.export('Infra server kubeconfig', retrieve_kubeconfig.stdout)
 
 # Export the infra server commmand output
 pulumi.export('Infra server helm stdout', install_helm.stdout)

@@ -1,0 +1,6 @@
+name: asterion-wordpress
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: A kubernetes pulumi program to deploy wordpress.
