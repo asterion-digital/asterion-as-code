@@ -1,0 +1,45 @@
+#+TITLE: Asterion as code
+#+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
+#+DATE: <2022-03-12 Sat>
+
+
+Need to deploy some asterion digital infrastructure or applications? Then you are in the right place.
+
+This repository stores the end to end documented processes for deploying asterion infrastructure or applications.
+
+
+* Installing pre-requisites
+
+Before you dive into deployments, there are some pre-requisites you'll need, these are listed below:
+
+** Pulumi cli
+
+Before we begin we should ensure we have the latest version of the pulumi cli utility installed. Asterion digital uses pulumi for modern infrastructure as code using python.
+
+The helper script below will install the pulumi cli to ~/home/$USER/.pulumi/bin~ and add it to your ~$PATH~.
+
+#+NAME: Install pulumi
+#+begin_src tmate
+# Run installation script
+curl -fsSL https://get.pulumi.com | sh
+
+# Verify version installed
+pulumi version
+#+end_src
+
+
+** Amazon web services cli
+
+Asterion infra development environments are deployed on [[https://aws.amazon.com/console/][aws]]. To interact with aws you will need the [[https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html][aws cli]].
+
+#+NAME: Install amazon web services cli
+#+BEGIN_SRC tmate
+# Download the binary
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+# Unzip and install
+unzip awscliv2.zip && sudo ./aws/install
+
+# Clean up
+rm -rf awscliv2.zip aws
+#+END_SRC
