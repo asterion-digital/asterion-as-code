@@ -3,9 +3,10 @@
 import pulumi
 import random
 from pulumi_kubernetes.apps.v1 import Deployment, DeploymentSpecArgs
+from pulumi_kubernetes.helm.v3.helm import ChartOpts
 from pulumi_kubernetes.meta.v1 import LabelSelectorArgs, ObjectMetaArgs
 from pulumi_kubernetes.core.v1 import ContainerArgs, PodSpecArgs, PodTemplateSpecArgs
-from pulumi_kubernetes.helm.v3 import Release, ReleaseArgs, RepositoryOptsArgs
+from pulumi_kubernetes.helm.v3 import Release, ReleaseArgs, RepositoryOptsArgs, Chart, LocalChartOpts
 
 # Generate mariadb password
 #mariadb_root = random.RandomPassword("mariadb-root-password", length=12)
@@ -26,12 +27,22 @@ mariadb = Release(
                 "registry": "ghcr.io",
                 "repository": "zcube/bitnami-compat/mariadb",
                 "tag": "10.6"
+            },
+            "auth" : {
+                "database": "wordpress",
+                "username": "wordpress",
+                "password": "wordpress"
             }
         },
     ),
 )
 
-#app_labels = { "app": "nginx" }
+wordpress = Chart(
+    "wpdev-wordpress",
+    LocalChartOpts(
+        path="./charts/wordpress"
+    ),
+)
 
-
-#pulumi.export("name", deployment.metadata["name"])
+# Export application information
+pulumi.export("Database name", mariadb.name)

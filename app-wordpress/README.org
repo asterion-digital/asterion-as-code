@@ -1,24 +1,36 @@
 #+TITLE: Deploy asterion wordpress
 #+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
-#+DATE: <2022-03-04 Fri>
+#+DATE: <2022-03-12 Sat>
+
+
+This repository captures the end to end workflow deploying [[https://wordpress.org/][wordpress]] on asterion digital infrastructure.
+
 
 * Setup environment
+
+Before we begin lets ensure we have our local ~KUBECONFIG~ environment variable set to our ~asterion-infra-kubeconfig~ file we created when we deployed our infrastructure.
 
 #+NAME: Export kubeconfig
 #+begin_src tmate
 export KUBECONFIG=../infra/asterion-infra-kubeconfig
 #+end_src
 
+
 * Create stack
+
+Once our environment is set we can complete the application deployment. Our application will be deployed onto the asterion [[https://k3s.io/][k3s]] kubernetes cluster using the [[https://www.pulumi.com/blog/full-access-to-helm-features-through-new-helm-release-resource-for-kubernetes/][pulumi helm module]].
 
 #+NAME: Bring pulumi stack up
 #+begin_src tmate
-pulumi up -y
+pulumi up --yes
 #+end_src
+
 
 * Teardown stack
 
+Need to make it all go away 😅?  No problem, run the following to completely teardown this stack.
+
 #+NAME: Teardown down the pulumi stack
 #+begin_src tmate
-pulumi destroy -y
+pulumi destroy --yes
 #+end_src
