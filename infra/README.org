@@ -2,12 +2,30 @@
 #+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
 #+DATE: <2022-03-04 Fri>
 
+
+This repository captures the end to end workflow for deploying asterion digital infrastructure via [[https://www.pulumi.com/][pulumi]].
+
+
 * Setup environment
+
+Before we begin we should ensure we have the latest version of the pulumi cli utility installed. The helper script below will install the pulumi cli to ~/home/$USER/.pulumi/bin~ and add it to your ~$PATH~.
+
+#+NAME: Install pulumi
+#+begin_src tmate
+# Run installation script
+curl -fsSL https://get.pulumi.com | sh
+
+# Verify version installed
+pulumi version
+#+end_src
+
+
+Once we have pulumi cli installed we can initialise our project, making sure we are in the right directory, have the python [[https://docs.python.org/3/library/venv.html][virtual environment]] activated, and have installed our python dependencies with [[https://pypi.org/project/pip/][pip]].
 
 #+NAME: Setup environment
 #+begin_src tmate
-# Initialise the stack
-pulumi stack init asterion-digital/dev
+# Start from the infra directory and initialise
+cd infra && pulumi stack init asterion-digital/dev
 
 # Activate virtual environment
 source venv/bin/activate
@@ -19,6 +37,12 @@ pip install -r requirements.txt
 
 * Create configuration
 
+Once our local environment is set up we can proceed with creating the required configuration entries in pulumi. For now this is just a local [[https://www.ssh.com/academy/ssh][ssh]] key.
+
+This is the key that will be added to the infrastructure virtual machines so ensure you update the ~$keyname~ variable as appropriate!
+
+Note: If you need to generate a new key you can run ~ssh-keygen -t rsa -b 4096 -C <comment>~.
+
 #+NAME: Create required pulumi configuration
 #+begin_src tmate
 export keyname="asterion"
@@ -29,11 +53,17 @@ cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
 
 * Create stack and retrieve kubeconfig
 
+Once we have our local pulumi configuration set we can bring up the infrastructure stack.
+
+Currently this stack includes a full stack of dedicated networking in amazon web services, with an arm cpu architecture [[https://aws.amazon.com/ec2/graviton/][ec2 virtual machine]] running [[https://k3s.io/k3s][k3s]].
+
 #+NAME: Bring the stack up
 #+begin_src tmate
-pulumi up -y
+pulumi up --yes
 #+end_src
 
+
+With our stack now running, lets retrieve the [[https://rancher.com/docs/rke/latest/en/kubeconfig/][k3s kubeconfig]] file and set this up in our local ~infra~ directory so that we can interact with the infrastructure later on to deploy applications.
 
 #+NAME: Retrieving kubeconfig
 #+begin_src tmate
@@ -47,3 +77,6 @@ pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
 ip=$(pulumi stack output "Infra server public ip")
 sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
 #+end_src
+
+
+Asterion infrastructure has now been deployed! 🚀
