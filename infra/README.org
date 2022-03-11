@@ -1,6 +1,6 @@
-#+TITLE: Asterion infra deployment
+#+TITLE: Asterion infrastructure deployment
 #+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
-#+DATE: <2022-03-04 Fri>
+#+DATE: <2022-03-12 Sat>
 
 
 This repository captures the end to end workflow for deploying asterion digital infrastructure via [[https://www.pulumi.com/][pulumi]].
@@ -68,3 +68,13 @@ sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
 
 
 Asterion infrastructure has now been deployed! 🚀
+
+
+* Teardown stack
+
+Need to make it all go away 😅?  No problem, run the following to completely teardown this stack.
+
+#+NAME: Teardown down the pulumi stack
+#+begin_src tmate
+pulumi destroy --yes
+#+end_src
