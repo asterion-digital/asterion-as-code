@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mariadb.fullname" . }}
+  labels:
+    {{- include "mariadb.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mariadb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mariadb.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          env:
+            - name: MARIADB_USER
+              value: "wordpress"
+            - name: MARIADB_PASSWORD
+              value: "wordpress"
+            - name: MARIADB_ROOT_PASSWORD
+              value: "wordpress"
+            - name: MARIADB_DATABASE
+              value: "wordpress"

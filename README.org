@@ -3,9 +3,7 @@
 #+DATE: <2022-03-12 Sat>
 
 
-Need to deploy some asterion digital infrastructure or applications? Then you are in the right place.
-
-This repository stores the end to end documented processes for deploying asterion infrastructure or applications.
+Need to deploy some asterion digital infrastructure or applications? Then you are in the right place! This repository stores the end to end documented processes for deploying asterion infrastructure or applications.
 
 
 * Installing pre-requisites
@@ -14,7 +12,7 @@ Before you dive into deployments, there are some pre-requisites you'll need, the
 
 ** Pulumi cli
 
-Before we begin we should ensure we have the latest version of the pulumi cli utility installed. Asterion digital uses pulumi for modern infrastructure as code using python.
+Before we begin we should ensure we have the latest version of the [[https://www.pulumi.com/docs/reference/cli/][pulumi cli]] utility installed. Asterion digital uses [[https://www.pulumi.com/][pulumi]] for modern infrastructure as code using [[https://www.python.org/][python]].
 
 The helper script below will install the pulumi cli to ~/home/$USER/.pulumi/bin~ and add it to your ~$PATH~.
 

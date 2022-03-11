@@ -10,10 +10,10 @@ image:
   tag: "5.9.1-php8.1"
 
 database:
-  host: wpdev-mariadb-ezx3u3lm
+  host: wpdev-mariadb
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 80
 
 ingress:

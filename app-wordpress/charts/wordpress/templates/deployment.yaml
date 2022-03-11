@@ -29,3 +29,5 @@ spec:
              value: "wordpress"
            - name: WORDPRESS_DB_NAME
              value: "wordpress"
+           - name: WORDPRESS_DB_USER
+             value: "wordpress"

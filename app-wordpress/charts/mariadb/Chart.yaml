@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mariadb
+description: Asterion digital helm chart for mariadb.
+type: application
+version: 0.1.0
+appVersion: "10.8.2"
