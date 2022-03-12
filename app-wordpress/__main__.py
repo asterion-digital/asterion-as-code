@@ -19,5 +19,5 @@ wordpress = Chart(
     "wpdev-wordpress",
     LocalChartOpts(
         path="./charts/wordpress"
-    ),
+    )
 )

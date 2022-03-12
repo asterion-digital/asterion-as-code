@@ -26,8 +26,8 @@ spec:
            - name: WORDPRESS_DB_HOST
              value: "{{ .Values.database.host }}"
            - name: WORDPRESS_DB_PASSWORD
-             value: "wordpress"
+             value: "{{ .Values.database.password }}"
            - name: WORDPRESS_DB_NAME
-             value: "wordpress"
+             value: "{{ .Values.database.name }}"
            - name: WORDPRESS_DB_USER
-             value: "wordpress"
+             value: "{{ .Values.database.user }}"
