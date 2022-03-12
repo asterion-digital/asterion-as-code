@@ -11,6 +11,9 @@ image:
 
 database:
   host: wpdev-mariadb
+  name: wordpress
+  user: wordpress
+  password: wordpress
 
 service:
   type: NodePort
@@ -31,3 +34,4 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
