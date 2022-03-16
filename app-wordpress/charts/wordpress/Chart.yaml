@@ -5,7 +5,7 @@ type: application
 
 # This is the chart version. This version should be bumped each time you make changes.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+version: 0.1.1
 
 # This is the version number of the application being deployed.
 # Refer: https://wordpress.org/download/releases/

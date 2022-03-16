@@ -29,7 +29,7 @@ pv = PersistentVolume(
             "storage": "100Gi"
         },
         "local": {
-            "path": "/mnt/data",
+            "path": "/mnt/data/k3s",
             "fs_type": "ext4"
         },
         "node_affinity": {
