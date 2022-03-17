@@ -5,6 +5,14 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{- define "mariadb.primary.fullname" -}}
+{{- if eq .Values.architecture "replication" }}
+{{- printf "%s-%s" (include "common.names.fullname" .) "primary" | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- include "mariadb.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
@@ -91,5 +99,15 @@ Return the proper Storage Class
   {{- else }}
       {{- printf "storageClassName: %s" $storageClass -}}
   {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return true if a configmap object should be created for MariaDB Secondary
+*/}}
+{{- define "mariadb.primary.createConfigmap" -}}
+{{- if and .Values.primary.configuration (not .Values.primary.existingConfigmap) }}
+    {{- true -}}
+{{- else -}}
 {{- end -}}
 {{- end -}}
