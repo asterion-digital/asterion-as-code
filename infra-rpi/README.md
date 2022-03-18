@@ -217,9 +217,11 @@ sudo mkfs.ext4 /dev/sda1
 cd /mnt/ && sudo mkdir -p data/k3s
 ```
 
+<hr />
+
 
 ## Install Python 
-We'll be using Python to define our infrastructure as code through Pulumi.
+We must install Python to be able to use this repository with Pulumi, as it uses Python to define our infrastructure as code through Pulumi.
 
 To install Python, run:
 ```
@@ -232,7 +234,9 @@ sudo apt install python3-venv python3-pip
 ## Setup environment
 If you have followed the [introductory guide](../README.org) and have Pulumi CLI installed on your local machine, it's time to configure Pulumi to operate our RPI stacks remotely from this local machine.
 
-To get started lets initialise our project, making sure we are in the right directory, have the python [[https://docs.python.org/3/library/venv.html][virtual environment]] activated, and have installed our python dependencies with [[https://pypi.org/project/pip/][pip]].
+
+### Initialise an existing Pulumi Project
+To get started with Pulumi, lets initialise our project, making sure we are in the right directory, have the python [virtual environment](https://docs.python.org/3/library/venv.html) activated, and have installed our python dependencies with [pip](https://pypi.org/project/pip/).
 
 ```
 # Start from the infra directory and initialise
@@ -248,7 +252,7 @@ pip install -r requirements.txt
 
 ### Create configuration
 
-Once our local environment is set up we can proceed with creating the required configuration entries in pulumi. For now this is just a local [[https://www.ssh.com/academy/ssh][ssh]] key.
+Once our local environment is set up we can proceed with creating the required configuration entries in pulumi. For now this is just a local [ssh](https://www.ssh.com/academy/ssh) key.
 
 This is the key that will be added to the infrastructure virtual machines so ensure you update the `$keyname` variable as appropriate!
 
@@ -276,13 +280,13 @@ sudo touch /etc/sudoers.d/asterion-sudo-profile && echo "asterion ALL=(ALL) NOPA
 
 ### Create stack and retrieve kubeconfig
 
-Once we have our local pulumi configuration set we can bring up the infrastructure stack. Currently, this stack includes the deploymemt of [[https://k3s.io/k3s][k3s]] on an existing RPI.
+Once we have our local pulumi configuration set we can bring up the infrastructure stack. Currently, this stack includes the deploymemt of [K3S](https://k3s.io/k3s) on an existing RPI.
 
 ```
 pulumi up --yes
 ```
 
-With our stack now running, lets retrieve the [[https://rancher.com/docs/rke/latest/en/kubeconfig/][k3s kubeconfig]] file and set this up in our local ~infra~ directory so that we can interact with the infrastructure later on to deploy applications.
+With our stack now running, lets retrieve the [k3s kubeconfig](https://rancher.com/docs/rke/latest/en/kubeconfig/) file and set this up in our local `infra-rpi` directory so that we can interact with the infrastructure later on to deploy applications.
 
 ```
 # Ensure kube file exists
