@@ -1,12 +1,12 @@
-* asterion-as-code
+# asterion-as-code
 
 This readme covers setting up a Raspberry Pi (model 4b) with the necessary configurations to run Pulumi stacks over top of Kubernetes clusters.
 
 
-** Preparing the R1aspberry Pi
+## Preparing the Raspberry Pi
 We'll install a USB-bootable AARCH64 (ARM) Linux Operating System (Ubuntu) into our Raspberry Pi.
 
-*** Pre-requisites
+### Pre-requisites
 Aside from physical hardware, you'll need to prepare the following:
 1. Download and install the official [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to write an OS image to the USB drive.
     > **Note:** You're not strictly limited to using the RPI Imager to perform image writing. You could use the ```dd``` command (refer [How to make disk image with dd on Linux or Unix](https://www.cyberciti.biz/faq/unix-linux-dd-create-make-disk-image-commands/)), which comes pre-built into most Linux images, performs similarly, and suits situations where you might not be able to obtain the RPI Imager.
@@ -23,17 +23,117 @@ Aside from physical hardware, you'll need to prepare the following:
 <hr />
 
 
-*** Ubuntu & SSH Installation and Configuration
+### Ubuntu & SSH Installation and Configuration
 1. The Ubuntu bootstrapper will take you through the normal installation options and steps - be sure to make note of the username and password you've set! The installation will take several minutes to complete. 
 2. Once installed, log in and open your applications. Make sure to mark the *Terminal* application as a favourite, which will add it to your quick-access toolbar.
 
 <hr />
 
 
-** Ubuntu Configuration and Remote Access
+## Ubuntu Configuration and Remote Access
 We'll need to enable remote SSH access so that we can perform any maintenance remotely.
 
-*** Configure Ubuntu Boot Behaviour
+
+### Enable the SSH Service
+1. Check that the SSH service is running.
+```
+sudo systemctl status sshd
+```
+2. If it isn't, start the SSH service and tweak the boot order to enable USB booting.
+    - Open the Raspberry Pi configuration manager.
+    ```
+    sudo raspi-config
+    ```
+    - Select *Interface Options* and enable the SSH service.
+> **Note:** If you have problems starting the service, it's likely it hasn't been installed on the host machine: `sudo apt-get install openssh-server`
+
+<hr />
+
+
+### Enable SSH key-based authentication 
+1. Create SSH key
+    ```
+    ssh-keygen -t rsa -b 4096 -C "<username>@hostname" -f ~/.ssh/<keyname>
+    ```
+2. Copy SSH public key to server and install into authorized_keys.
+    ```
+    ssh-copy-id -i ~/.ssh/<key/filename>.pub <server username>@<server hostname/ext. ip> -p <external port number>
+    ```
+> **Note:** Initial host key verification may fail if you've connected to this host before, and the server has a static local IP. We will need to remove the host key entry in our *known_hosts* file with `ssh-keygen -f "/path/to/known_hosts/file" -R "<RPI4 node IP address>"`. 
+
+> **Note:** Use the following code on the host machine to remove **a single** public key from the host that may have erroneously been added:
+    ```sed -i.bak '/REGEX_MATCHING_KEY/d' ~/.ssh/authorized_keys```
+
+> **Note:** Use the following code on the host machine to remove **multiple** public keys from the host that may have erroneously been added:
+    ```sed -i.bak '/REGEX1/d; /REGEX2/d' ~/.ssh/authorized_keys```
+
+<hr />
+
+
+### Secure SSH config in RPI
+> **Note:** Reference [https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings](https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings) and access the SSH configuration file using `sudo nano /etc/ssh/sshd_config`
+
+1. Open SSH config and follow the referenced link above to tweak settings.
+2. Once the settings have been configured, restart the SSH service with `sudo systemctl restart sshd`
+
+<hr />
+
+
+### Enable SSH remote access on a specific port at the internet gateway.
+1. Log in to router.
+2. Open an external port <PORT NUMBER> on RPI external IP 124.248.134.230.
+3. Forward to internal port 22.
+4. Apply changes.
+
+<hr />
+
+
+### Test connection
+Connect to the host by specifying the port at which the host accepts SSH traffic.
+```
+ssh -p <external port number> <server username>@<server hostname/ext. ip>
+```
+
+<hr />
+
+
+### Monitor logs on the server for any dodgy port knocks
+Use the following command to review SSH connection attempts on the network interface of our proposed server.
+```
+sudo cat /var/log/auth.log
+```
+
+<hr />
+
+
+### Enable SSH remote Git access from server
+
+1. Create an SSH key on the server (see above example).
+2. Copy the public key contents, log in to your Github account, and enter the key data into a new PGP key entry under your Github account in _Settings/Encryption Keys/Add New Key_
+```
+cat ~/.ssh/<public keyname>.pub | xclip
+```
+3. Ensure the SSH-Agent has started and the key has been added to your agent.
+```
+eval `ssh-agent` && ssh-add ~/.ssh/<key/filename>
+```
+3. Test the connection.
+```
+ssh -T git@github.com
+```
+4. Update git config with identity values.
+```
+git config --global user.email "<email address>" && git config --global user.name "<user>@<hostname>"
+```
+5. Clone this repository.
+```
+git clone git@github.com:shawngerrard/pulumi-litrepublic-www-dev.git
+```
+
+<hr />
+
+
+### Configure Ubuntu Boot Behaviour
 Open up *Terminal* and use the following commands to configure your OS environment:
 1. First, ensure all Apt packages are up-to-date.
 ```
@@ -70,16 +170,17 @@ sudo rpi-eeprom-update
 <hr />
 
 
-*** Configure Ubuntu Storage Volumes
+## Configure Ubuntu Local Storage
 By default, the RPI Imager will create a volume on the USB flash disk. If you're happy with this, you can skip this section. Otherwise, you'll need to do some work to mount any attached volumes to the node.
 
+### Configure Ubuntu Storage Volumes
 First, attach your storage if it's not already attached. Then check that your filesystem has been mounted automatically - it's quite likely that it hasn't.
 
 ```
-* View the list of filesystems currently mounted
+# View the list of filesystems currently mounted
 df -h
 
-* View the list of partitions for each filesystem
+# View the list of partitions for each filesystem
 lsblk
 ```
 
@@ -90,7 +191,7 @@ lsblk
 > **Note:** You can skip the first few commands that erase partitions/filesystems if you do not wish to do this.
 
 ```
-* Erase the partitions on the attached volume
+# Erase the partitions on the attached volume
 sudo fdisk /dev/<sda/sdb>
 ```
 
@@ -104,118 +205,20 @@ Finally, write the partition table to the disk `(w)`.
 
 Once this is done, exit `ctrl+c` and reboot `reboot now`.
 
-** TO DO - FINISH MOUNT INSTRUCTION
+## TO DO - FINISH MOUNT INSTRUCTION
+
 
 ```
-* Create a partition on our attached storage
-* NOTE: Ensure you follow the interactive prompts that follow properly to configure the partition
+# Create a partition on our attached storage
+# NOTE: Ensure you follow the interactive prompts that follow properly to configure the partition
 sudo mkfs.ext4 /dev/sda1
 
-* Create the directory on the volume that will be the default location of the mount path
-cd /mnt/ && sudo mkdir data
+# Create the directory on the volume that will be the default location of the mount path
+cd /mnt/ && sudo mkdir -p data/k3s
 ```
 
 
-*** Enable the SSH Service
-1. Check that the SSH service is running.
-```
-sudo systemctl status sshd
-```
-2. If it isn't, start the SSH service and tweak the boot order to enable USB booting.
-    - Open the Raspberry Pi configuration manager.
-    ```
-    sudo raspi-config
-    ```
-    - Select *Interface Options* and enable the SSH service.
-> **Note:** If you have problems starting the service, it's likely it hasn't been installed on the host machine: `sudo apt-get install openssh-server`
-
-<hr />
-
-
-*** Enable SSH key-based authentication 
-1. Create SSH key
-    ```
-    ssh-keygen -t rsa -b 4096 -C "<username>@hostname" -f ~/.ssh/<keyname>
-    ```
-2. Copy SSH public key to server and install into authorized_keys.
-    ```
-    ssh-copy-id -i ~/.ssh/<key/filename>.pub <server username>@<server hostname/ext. ip> -p <external port number>
-    ```
-> **Note:** Initial host key verification may fail if you've connected to this host before, and the server has a static local IP. We will need to remove the host key entry in our *known_hosts* file with `ssh-keygen -f "/path/to/known_hosts/file" -R "<RPI4 node IP address>"`. 
-
-> **Note:** Use the following code on the host machine to remove **a single** public key from the host that may have erroneously been added:
-    ```sed -i.bak '/REGEX_MATCHING_KEY/d' ~/.ssh/authorized_keys```
-
-> **Note:** Use the following code on the host machine to remove **multiple** public keys from the host that may have erroneously been added:
-    ```sed -i.bak '/REGEX1/d; /REGEX2/d' ~/.ssh/authorized_keys```
-
-<hr />
-
-
-*** Secure SSH config in RPI
-> **Note:** Reference [https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings](https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings) and access the SSH configuration file using `sudo nano /etc/ssh/sshd_config`
-
-1. Open SSH config and follow the referenced link above to tweak settings.
-2. Once the settings have been configured, restart the SSH service with `sudo systemctl restart sshd`
-
-<hr />
-
-
-*** Enable SSH remote access on a specific port at the internet gateway.
-1. Log in to router.
-2. Open an external port <PORT NUMBER> on RPI external IP 124.248.134.230.
-3. Forward to internal port 22.
-4. Apply changes.
-
-<hr />
-
-
-*** Test connection
-Connect to the host by specifying the port at which the host accepts SSH traffic.
-```
-ssh -p <external port number> <server username>@<server hostname/ext. ip>
-```
-
-<hr />
-
-
-*** Monitor logs on the server for any dodgy port knocks
-Use the following command to review SSH connection attempts on the network interface of our proposed server.
-```
-sudo cat /var/log/auth.log
-```
-
-<hr />
-
-
-*** Enable SSH remote Git access from server
-
-1. Create an SSH key on the server (see above example).
-2. Copy the public key contents, log in to your Github account, and enter the key data into a new PGP key entry under your Github account in _Settings/Encryption Keys/Add New Key_
-```
-cat ~/.ssh/<public keyname>.pub | xclip
-```
-3. Ensure the SSH-Agent has started and the key has been added to your agent.
-```
-eval `ssh-agent` && ssh-add ~/.ssh/<key/filename>
-```
-3. Test the connection.
-```
-ssh -T git@github.com
-```
-4. Update git config with identity values.
-```
-git config --global user.email "<email address>" && git config --global user.name "<user>@<hostname>"
-```
-5. Clone this repository.
-```
-git clone git@github.com:shawngerrard/pulumi-litrepublic-www-dev.git
-```
-
-<hr />
-
-
-** Install Python 
+## Install Python 
 We'll be using Python to define our infrastructure as code through Pulumi.
 
 To install Python, run:
@@ -226,57 +229,62 @@ sudo apt install python3-venv python3-pip
 <hr />
 
 
-* Setup environment
+## Setup environment
+If you have followed the [introductory guide](../README.org) and have Pulumi CLI installed on your local machine, it's time to configure Pulumi to operate our RPI stacks remotely from this local machine.
 
 To get started lets initialise our project, making sure we are in the right directory, have the python [[https://docs.python.org/3/library/venv.html][virtual environment]] activated, and have installed our python dependencies with [[https://pypi.org/project/pip/][pip]].
 
-*+NAME: Setup environment
-*+begin_src tmate
-* Start from the infra directory and initialise
+```
+# Start from the infra directory and initialise
 cd infra-rpi && pulumi stack init dev
 
-* Activate virtual environment
+# Activate virtual environment
 source venv/bin/activate
 
-* Install pip requirements
+# Install pip requirements
 pip install -r requirements.txt
-*+end_src
+```
 
 
-* Create configuration
+### Create configuration
 
 Once our local environment is set up we can proceed with creating the required configuration entries in pulumi. For now this is just a local [[https://www.ssh.com/academy/ssh][ssh]] key.
 
-This is the key that will be added to the infrastructure virtual machines so ensure you update the ~$keyname~ variable as appropriate!
+This is the key that will be added to the infrastructure virtual machines so ensure you update the `$keyname` variable as appropriate!
 
-Note: If you need to generate a new key you can run ~ssh-keygen -t rsa -b 4096 -C <comment>~.
+Note: If you need to generate a new key you can run `ssh-keygen -t rsa -b 4096 -C <comment>`.
 
-*+NAME: Create required pulumi configuration
-*+begin_src tmate
+```
 export keyname="mandalore-rpi"
 cat ~/.ssh/${keyname}.pub | pulumi config set publickey
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
 echo 124.248.134.230:6833 | pulumi config set ip_address
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
-*+end_src
+```
 
 
-* Create stack and retrieve kubeconfig
+### Setup Default User with Administrative Priviledges
+To be able to install K3S via Pulumi without errors, we need to provide the default Ubuntu user (*asterion*) with `sudo` privileges. 
 
-Once we have our local pulumi configuration set we can bring up the infrastructure stack.
+We'll achieve this by creating a *sudo user profile* on the remote RPI.
 
-Currently this stack includes the deploymemt of [[https://k3s.io/k3s][k3s]] on an existing RPI.
+```
+# Create a sudo profile for the `asterion` user on the remote machine
+sudo touch /etc/sudoers.d/asterion-sudo-profile && echo "asterion ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/asterion-sudo-profile
+```
 
-#+NAME: Bring the stack up
-#+begin_src tmate
+
+### Create stack and retrieve kubeconfig
+
+Once we have our local pulumi configuration set we can bring up the infrastructure stack. Currently, this stack includes the deploymemt of [[https://k3s.io/k3s][k3s]] on an existing RPI.
+
+```
 pulumi up --yes
-#+end_src
-
+```
 
 With our stack now running, lets retrieve the [[https://rancher.com/docs/rke/latest/en/kubeconfig/][k3s kubeconfig]] file and set this up in our local ~infra~ directory so that we can interact with the infrastructure later on to deploy applications.
 
-#+NAME: Retrieving kubeconfig
-#+begin_src tmate
+```
 # Ensure kube file exists
 mkdir ~/.kube
 
@@ -286,4 +294,4 @@ pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
 # Sed replace the kubeconfig ip
 ip=$(pulumi stack output "Infra server public ip")
 sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
-#+end_src
+```

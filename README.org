@@ -45,5 +45,5 @@ rm -rf awscliv2.zip aws
 
 ** Raspberry Pi Infrastructure
 
-Asterion infra development environments can also be deployed on a Raspberry Pi. Use the following [[https://aws.amazon.com/console/][RPI guide]] to setup this infrastructure quickly and easily.
+Asterion infra development environments can also be deployed on a Raspberry Pi. Use the following [[infra-rpi][RPI guide]] to setup this infrastructure quickly and easily.
 
