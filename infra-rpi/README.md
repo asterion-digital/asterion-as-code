@@ -10,15 +10,20 @@ We'll install a USB-bootable AARCH64 (ARM) Linux Operating System (Ubuntu) into 
 Aside from physical hardware, you'll need to prepare the following:
 1. Download and install the official [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to write an OS image to the USB drive.
     > **Note:** You're not strictly limited to using the RPI Imager to perform image writing. You could use the ```dd``` command (refer [How to make disk image with dd on Linux or Unix](https://www.cyberciti.biz/faq/unix-linux-dd-create-make-disk-image-commands/)), which comes pre-built into most Linux images, performs similarly, and suits situations where you might not be able to obtain the RPI Imager.
+```
+sudo snap install rpi-imager
+```
+
 2. Write a Linux image to both an SD card and a USB flash drive.
     > **Note:** For RPI 4B models older purchased during or after 2021, you should only need to write the image to a USB drive as USB boot is enabled in the RPI 4b EEPROM boot order by default.
     
     - The Raspberry Pi OS is the recommended general purpose OS built specifically for use with Raspberry Pi hardware specifications and based upon the Debain Linux distribution. However, we will use the *"Other general-purpose OS"* option to select a 64-bit Ubuntu Desktop (currently 21.10). Please note that you should use a less resource-heavy OS as Desktop distributions may have performance issues related to processing complex graphical environments.
 
-    > **Note:** If using the latest version of **_Ubuntu (21.10)_**, vxlan modules were removed from this distribution into a seperate package *(linux-modules-extra-raspi)*. You'll need this package to ensure flannel can set up your internal cluster mesh network correctly. To install this package, use the command: ```sudo apt-get install linux-modules-extra-raspi``` before continuing with the rest of the instructions.
+    > **Note:** If using the latest version of **_Ubuntu (21.10)_**, vxlan modules were removed from this distribution into a seperate package *(linux-modules-extra-raspi)*. You'll need to install this package to ensure flannel can set up your internal cluster mesh network correctly. To install this package, use the command: ```sudo apt-get install linux-modules-extra-raspi``` before continuing with the rest of the instructions.
 
     > **Note:** I recommend [downloading the image](https://ubuntu.com/download/raspberry-pi) first and using the *"Use custom"* option in the RPI Imager to select the downloaded image. This will significantly increase performance during image writing.
-3. When the image has been written to the SD card, put it into the SD reader on the RPI and power it up!
+
+3. When the image has been written to the SD card/USB, put the device into the RPI and power it up!
 
 <hr />
 
