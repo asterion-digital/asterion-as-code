@@ -23,7 +23,9 @@ sudo snap install rpi-imager
 
     > **Note:** I recommend [downloading the image](https://ubuntu.com/download/raspberry-pi) first and using the *"Use custom"* option in the RPI Imager to select the downloaded image. This will significantly increase performance during image writing.
 
-3. When the image has been written to the SD card/USB, put the device into the RPI and power it up!
+3. Make sure to tweak the _Advanced Options_ by clicking the cog. Ensure you set the _hostname_ to `asterionpi-dev`, ensure _Enable SSH_ is selected as well as _Allow public-key authentication only_(feel free to transfer any public keys into the _authorized keys_ section - note that only one key can be accepted at present!), _Set username and password_ is selected with a specific username and password, and _Configure wifi_ is selected with the correct SSID and password.
+
+4. When the image has been written to the SD card/USB, put the device into the RPI and power it up!
 
 <hr />
 
