@@ -9,25 +9,36 @@ We'll install a USB-bootable AARCH64 (ARM) Linux Operating System (Ubuntu) into 
 ### Pre-requisites
 Aside from physical hardware, you'll need to prepare the following:
 1. Download and install the official [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to write an OS image to the USB drive.
+
     > **Note:** You're not strictly limited to using the RPI Imager to perform image writing. You could use the ```dd``` command (refer [How to make disk image with dd on Linux or Unix](https://www.cyberciti.biz/faq/unix-linux-dd-create-make-disk-image-commands/)), which comes pre-built into most Linux images, performs similarly, and suits situations where you might not be able to obtain the RPI Imager.
-```
-sudo snap install rpi-imager
-```
+
+    > **Note:** You can use snap to install the imager with `sudo snap install rpi-imager`, **however** there's RPI-specific dependencies included with this method of installation. I recommend, if using RPI Imager, to download the installer manually and install using your built-in installers. E.G: for Ubuntu, use the application _Ubuntu Software_.
 
 2. Write a Linux image to both an SD card and a USB flash drive.
+
     > **Note:** For RPI 4B models older purchased during or after 2021, you should only need to write the image to a USB drive as USB boot is enabled in the RPI 4b EEPROM boot order by default.
     
     - The Raspberry Pi OS is the recommended general purpose OS built specifically for use with Raspberry Pi hardware specifications and based upon the Debain Linux distribution. However, we will use the *"Other general-purpose OS"* option to select a 64-bit Ubuntu Desktop (currently 21.10). Please note that you should use a less resource-heavy OS as Desktop distributions may have performance issues related to processing complex graphical environments.
 
+    > **Note:** I recommend [downloading the image](https://ubuntu.com/download/raspberry-pi) first and using the *"Use custom"* option in the RPI Imager to select the downloaded image. This will significantly increase performance during image writing. If you have issues using a downloaded ISO file, please revert back to using the RPI Imager curated library to select the proper image.
+
     > **Note:** If using the latest version of **_Ubuntu (21.10)_**, vxlan modules were removed from this distribution into a seperate package *(linux-modules-extra-raspi)*. You'll need to install this package to ensure flannel can set up your internal cluster mesh network correctly. To install this package, use the command: ```sudo apt-get install linux-modules-extra-raspi``` before continuing with the rest of the instructions.
 
-    > **Note:** I recommend [downloading the image](https://ubuntu.com/download/raspberry-pi) first and using the *"Use custom"* option in the RPI Imager to select the downloaded image. This will significantly increase performance during image writing.
-
-3. Make sure to tweak the _Advanced Options_ by clicking the cog. Ensure you set the _hostname_ to `asterionpi-dev`, ensure _Enable SSH_ is selected as well as _Allow public-key authentication only_(feel free to transfer any public keys into the _authorized keys_ section - note that only one key can be accepted at present!), _Set username and password_ is selected with a specific username and password, and _Configure wifi_ is selected with the correct SSID and password.
+3. Make sure to tweak the _Advanced Options_ by clicking the cog. Ensure the following:
+    - You set the _hostname_ to `asterionpi-dev`;
+    - _Enable SSH_ is selected;
+    - _Allow public-key authentication only_ is selected (feel free to transfer any public keys into the _authorized keys_ section - note that only one key can be accepted at present!);
+    - _Set username and password_ is selected with a specific username and password;
+    - _Configure wifi_ is selected with the correct SSID and password, and;
+    - _Eject media when finished_ is deselected - this will enable these settings to be written to the image.
+Also, ensure that the sudo/admin password you use to bypass User Access Control prompts is correct - the RPI Imager will initially work if this is wrong, but will fail when writing _config.txt_ with the advanced settings you've set above.
 
 4. When the image has been written to the SD card/USB, put the device into the RPI and power it up!
 
 <hr />
+
+
+
 
 
 ### Ubuntu & SSH Installation and Configuration
