@@ -3,7 +3,7 @@
 This readme covers setting up a Raspberry Pi (model 4b) with the necessary configurations to run Pulumi stacks over top of Kubernetes clusters.
 
 
-## Preparing the Raspberry Pi
+## Preparing the raspberry pi
 We'll install a USB-bootable AARCH64 (ARM) Linux Operating System (Ubuntu) into our Raspberry Pi.
 
 ### Pre-requisites
@@ -38,18 +38,22 @@ Also, ensure that the sudo/admin password you use to bypass User Access Control 
 <hr />
 
 
-
-
-
-### Ubuntu & SSH Installation and Configuration
+## Ubuntu configuration and remote access
 1. The Ubuntu bootstrapper will take you through the normal installation options and steps - be sure to make note of the username and password you've set! The installation will take several minutes to complete. 
-2. Once installed, log in and open your applications. Make sure to mark the *Terminal* application as a favourite, which will add it to your quick-access toolbar.
+2. Once installed, log in using the username and password supplied to the RPI Imager software above.
+
+
+### Ensure apt packages are up-to-date
+Run the following command to ensure that Ubuntu's apt packages are up-to-date: ```sudo apt-get update```.
+
+If you receive the error `temporary failure resolving 'ports.ubuntu.com'` upon running the update process, ensure the following:
+1. That your netplan configuration shows the correct wireless connection details.
+    - Run `sudo cat /etc/netplan/50-cloud-init.yaml` and ensure the `wifis` and `ethernets` sections are correct. You can use our [50-cloud-init-example.yaml](examples/50-cloud-init-example.yaml) as a reference to what that should reasonably look like.
+    > **Note:** Please ensure that the quotation marks around the SSID name in the `access-points` section is preserved!
+    - Run `sudo netplan apply` or `reboot now` to allow changes to take effect.
+    - Once restarted, try `sudo apt-get update` again.
 
 <hr />
-
-
-## Ubuntu Configuration and Remote Access
-We'll need to enable remote SSH access so that we can perform any maintenance remotely.
 
 
 ### Enable the SSH Service
@@ -153,7 +157,7 @@ git clone git@github.com:shawngerrard/pulumi-litrepublic-www-dev.git
 
 ### Configure Ubuntu Boot Behaviour
 Open up *Terminal* and use the following commands to configure your OS environment:
-1. First, ensure all Apt packages are up-to-date.
+1. First, ensure all Apt packages are up-to-date (if not already).
 ```
 sudo apt-get update
 ```
