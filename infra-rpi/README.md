@@ -38,6 +38,49 @@ Also, ensure that the sudo/admin password you use to bypass User Access Control 
 <hr />
 
 
+### Configure Ubuntu Boot Behaviour
+If this is the first time booting up your Raspberry Pi - congratulations!
+
+You likely have an SD card in there. Now, we want to boot the RPI with Ubuntu from our bootable USB. To do this, follow these instructions, however do note that you'll only need to do this **once** as we will be updating the onboard EEPROM on the RPI. For subsequent installations on the same RPI, we should be able to just boot straight from the USB. 
+
+Open up *Terminal* and use the following commands to configure your OS environment:
+1. First, ensure all Apt packages are up-to-date (if not already).
+```
+sudo apt-get update
+```
+> **Note:** Refer section 'Ensure apt packages are up-to-date' below if you have any problems running this command.
+
+2. Install *net-tools* to obtain and/or verify network interface configurations.
+```
+sudo apt-get install net-tools
+```
+3. Install *raspi-config* via Apt so we can tweak the Raspberry Pi system and boot configuration.
+```
+sudo apt-get install raspi-config
+```
+4. Ensure that the EEPROM firmware is all up-to-date.
+```
+sudo rpi-eeprom-update
+```
+5. Update the RPI configuration.
+
+    1. Open the RPI configuration manager.
+    ```
+    sudo raspi-config
+    ```
+    2. Select *Advanced Options > Boot Order* and select *USB Boot*.
+    3. Commit changes and power down the RPI.
+    > **Note:** It's important that the internal power-off process completes gracefully, so that the updates from the configuration manager can be applied.
+    ```
+    shutdown -h now
+    ``` 
+    4. Once the RPI has shut down, remove the SD card and insert the USB flash drive containing our Ubuntu image.
+
+6. Once you've traversed through the initial Ubuntu configuration UI, **repeat steps 1 to 4** above.
+
+<hr />
+
+
 ## Ubuntu configuration and remote access
 1. The Ubuntu bootstrapper will take you through the normal installation options and steps - be sure to make note of the username and password you've set! The installation will take several minutes to complete. 
 2. Once installed, log in using the username and password supplied to the RPI Imager software above.
@@ -67,7 +110,7 @@ sudo systemctl status sshd
     sudo raspi-config
     ```
     - Select *Interface Options* and enable the SSH service.
-> **Note:** If you have problems starting the service, it's likely it hasn't been installed on the host machine: `sudo apt-get install openssh-server`
+> **Note:** If you have problems starting the SSH service, it's likely it hasn't been installed on the host machine: `sudo apt-get install openssh-server`
 
 <hr />
 
@@ -151,43 +194,6 @@ git config --global user.email "<email address>" && git config --global user.nam
 ```
 git clone git@github.com:shawngerrard/pulumi-litrepublic-www-dev.git
 ```
-
-<hr />
-
-
-### Configure Ubuntu Boot Behaviour
-Open up *Terminal* and use the following commands to configure your OS environment:
-1. First, ensure all Apt packages are up-to-date (if not already).
-```
-sudo apt-get update
-```
-2. Install *net-tools* to obtain and/or verify network interface configurations.
-```
-sudo apt-get install net-tools
-```
-3. Install *raspi-config* via Apt so we can tweak the Raspberry Pi system and boot configuration.
-```
-sudo apt-get install raspi-config
-```
-4. Ensure that the EEPROM firmware is all up-to-date.
-```
-sudo rpi-eeprom-update
-```
-5. Update the RPI configuration.
-
-    1. Open the RPI configuration manager.
-    ```
-    sudo raspi-config
-    ```
-    2. Select *Advanced Options > Boot Order* and select *USB Boot*.
-    3. Commit changes and power down the RPI.
-    > **Note:** It's important that the internal power-off process completes gracefully, so that the updates from the configuration manager can be applied.
-    ```
-    shutdown -h now
-    ``` 
-    4. Once the RPI has shut down, remove the SD card and insert the USB flash drive containing our Ubuntu image.
-
-6. Once you've traversed through the initial Ubuntu configuration UI, **repeat steps 1 to 4** above.
 
 <hr />
 
