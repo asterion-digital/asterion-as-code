@@ -292,14 +292,16 @@ Note: If you need to generate a new key you can run `ssh-keygen -t rsa -b 4096 -
 export keyname="asterion"
 cat ~/.ssh/${keyname}.pub | pulumi config set publickey
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
-echo 124.248.134.230:6833 | pulumi config set ip_address
+echo 124.248.134.230 | pulumi config set ip_address
 ```
 
 
 ### Setup default user with administrative priviledges
 To be able to install K3S via Pulumi without errors, we need to provide the default Ubuntu user (*asterion*) with `sudo` privileges. 
 
-We'll achieve this by creating a *sudo user profile* on the remote RPI.
+We'll achieve this by creating a *sudo user profile* on the remote RPI. 
+
+> **Note:** You should only need to perform this action once.
 
 ```
 # Create a sudo profile for the `asterion` user on the remote machine
@@ -309,7 +311,7 @@ sudo touch /etc/sudoers.d/asterion-sudo-profile && echo "asterion ALL=(ALL) NOPA
 
 ### Create stack and retrieve kubeconfig
 
-Once we have our local pulumi configuration set we can bring up the infrastructure stack. Currently, this stack includes the deploymemt of [K3S](https://k3s.io/k3s) on an existing RPI.
+Once we have our local pulumi configuration set we can bring up the infrastructure stack. Currently, this stack includes the deployment of [K3S](https://k3s.io/k3s) on an existing RPI.
 
 ```
 pulumi up --yes
