@@ -6,8 +6,9 @@ This readme covers setting up a Raspberry Pi (model 4b) with the necessary confi
 ## Preparing the raspberry pi
 We'll install a USB-bootable AARCH64 (ARM) Linux Operating System (Ubuntu) into our Raspberry Pi.
 
-### Pre-requisites
-Aside from physical hardware, you'll need to prepare the following:
+### Creating an ubuntu disk image
+Aside from physical hardware, you'll need to prepare a USB and SD card with an operating system image.
+
 1. Download and install the official [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to write an OS image to the USB drive.
 
     > **Note:** You're not strictly limited to using the RPI Imager to perform image writing. You could use the ```dd``` command (refer [How to make disk image with dd on Linux or Unix](https://www.cyberciti.biz/faq/unix-linux-dd-create-make-disk-image-commands/)), which comes pre-built into most Linux images, performs similarly, and suits situations where you might not be able to obtain the RPI Imager.
@@ -35,10 +36,8 @@ Also, ensure that the sudo/admin password you use to bypass User Access Control 
 
 4. When the image has been written to the SD card/USB, put the device into the RPI and power it up!
 
-<hr />
 
-
-### Configure ubuntu boot behaviour
+### Configure default ubuntu boot behaviour
 If this is the first time booting up your Raspberry Pi - congratulations!
 
 You likely have an SD card in there. Now, we want to boot the RPI with Ubuntu from our bootable USB. To do this, follow these instructions, however do note that you'll only need to do this **once** as we will be updating the onboard EEPROM on the RPI. For subsequent installations on the same RPI, we should be able to just boot straight from the USB. 
@@ -81,7 +80,7 @@ sudo rpi-eeprom-update
 <hr />
 
 
-## Ubuntu configuration and remote access
+## Server configuration and remote access
 1. The Ubuntu bootstrapper will take you through the normal installation options and steps - be sure to make note of the username and password you've set! The installation will take several minutes to complete. 
 2. Once installed, log in using the username and password supplied to the RPI Imager software above.
 
@@ -96,8 +95,6 @@ If you receive the error `temporary failure resolving 'ports.ubuntu.com'` upon r
     - Run `sudo netplan apply` or `reboot now` to allow changes to take effect.
     - Once restarted, try `sudo apt-get update` again.
 
-<hr />
-
 
 ### Enable the ssh Service
 1. Check that the SSH service is running.
@@ -111,8 +108,6 @@ sudo systemctl status sshd
     ```
     - Select *Interface Options* and enable the SSH service.
 > **Note:** If you have problems starting the SSH service, it's likely it hasn't been installed on the host machine: `sudo apt-get install openssh-server`
-
-<hr />
 
 
 ### Enable ssh key-based authentication 
@@ -132,16 +127,12 @@ sudo systemctl status sshd
 > **Note:** Use the following code on the host machine to remove **multiple** public keys from the host that may have erroneously been added:
     ```sed -i.bak '/REGEX1/d; /REGEX2/d' ~/.ssh/authorized_keys```
 
-<hr />
-
 
 ### Secure ssh config in rpi
 > **Note:** Reference [https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings](https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings) and access the SSH configuration file using `sudo nano /etc/ssh/sshd_config`
 
 1. Open SSH config and follow the referenced link above to tweak settings.
 2. Once the settings have been configured, restart the SSH service with `sudo systemctl restart sshd`
-
-<hr />
 
 
 ### Enable ssh remote access on a specific port at the internet gateway
@@ -150,16 +141,12 @@ sudo systemctl status sshd
 3. Forward to internal port 22.
 4. Apply changes.
 
-<hr />
-
 
 ### Test connection
 Connect to the host by specifying the port at which the host accepts SSH traffic.
 ```
 ssh -p <external port number> <server username>@<server hostname/ext. ip>
 ```
-
-<hr />
 
 
 ### Monitor logs on the server for any dodgy port knocks
@@ -168,11 +155,8 @@ Use the following command to review SSH connection attempts on the network inter
 sudo cat /var/log/auth.log
 ```
 
-<hr />
-
 
 ### Enable ssh remote git access from server
-
 1. Create an SSH key on the server (see above example).
 2. Copy the public key contents, log in to your Github account, and enter the key data into a new PGP key entry under your Github account in _Settings/Encryption Keys/Add New Key_
 ```
@@ -199,24 +183,31 @@ git clone git@github.com:shawngerrard/asterion-as-code.git
 
 
 ## Configure ubuntu local storage
-By default, the RPI Imager will create a volume on the USB flash disk. If you're happy with this, you can skip this section. Otherwise, you'll need to do some work to mount any attached volumes to the node.
+By default, the RPI Imager will create a volume on the USB flash disk. If you're happy with this, you can skip this section. Otherwise, you'll need to mount any attached volumes to the operating system.
 
-### Configure ubuntu storage volumes
+### Identify attached filesystem device
 First, attach your storage if it's not already attached. Then check that your filesystem has been mounted automatically - it's quite likely that it hasn't.
 
 ```
-# View the list of filesystems currently mounted
+# View the list of filesystems currently attached
 df -h
 
 # View the list of partitions for each filesystem
 lsblk
+
+# View the details of attached devices
+sudo fdisk -l
 ```
 
-**If your filesystem has been mounted correctly**, you should see a filesystem labelled _sda1_ or _sdb1_ in the ```df -h``` output. Check filesystem size, partitions, and the data in the mount path to verify the correct filesystem.
 
-**If your filesystem has *not* been mounted correctly**, the filesystem has not mounted successfully, and we will need to perform the following commands on the RPI server:
+### Format and partition attached filesystem
+Before we mount the new filesystem device to our server, we must first prepare it for mounting by reformatting and partitioning as necessary.
 
-> **Note:** You can skip the first few commands that erase partitions/filesystems if you do not wish to do this.
+**If your filesystem has been mounted correctly**, a _mountpoint_ will be associated with the attached filesystem (typically labelled _sda1_ or _sdb1_) in the ```lsblk``` output, and the same filesystem will be present in the `df -h` output.
+
+**If your filesystem has *not* been mounted correctly**, we will need to perform the following commands on the RPI server:
+
+> **Note:** You can skip the first few commands to follow which erase partitions/filesystems if you do not wish to do this.
 
 ```
 # Erase the partitions on the attached volume
@@ -233,16 +224,24 @@ Finally, write the partition table to the disk `(w)`.
 
 Once this is done, exit `ctrl+c` and reboot `reboot now`.
 
-## TO DO - FINISH MOUNT INSTRUCTION
 
+### Mount the filesystem
 
 ```
-# Create a partition on our attached storage
-# NOTE: Ensure you follow the interactive prompts that follow properly to configure the partition
+# Format the new partition with the `ext4` fs type
 sudo mkfs.ext4 /dev/sda1
 
-# Create the directory on the volume that will be the default location of the mount path
+# Create an easily-identifiable label for the fs
+e2label /dev/sda1 asterion-fs
+
+# Create the directory on the volume that will be the default location of the mount point path
 cd /mnt/ && sudo mkdir -p data/k3s
+
+# Mount the volume to the mount point path set above
+sudo mount /dev/sda1 /mnt/data/k3s
+
+# Confirm the mount process succeeded
+df -h
 ```
 
 <hr />
@@ -329,3 +328,5 @@ pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
 ip=$(pulumi stack output "Infra server public ip")
 sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
 ```
+
+<hr />
