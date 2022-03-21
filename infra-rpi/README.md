@@ -38,7 +38,7 @@ Also, ensure that the sudo/admin password you use to bypass User Access Control 
 <hr />
 
 
-### Configure Ubuntu Boot Behaviour
+### Configure ubuntu boot behaviour
 If this is the first time booting up your Raspberry Pi - congratulations!
 
 You likely have an SD card in there. Now, we want to boot the RPI with Ubuntu from our bootable USB. To do this, follow these instructions, however do note that you'll only need to do this **once** as we will be updating the onboard EEPROM on the RPI. For subsequent installations on the same RPI, we should be able to just boot straight from the USB. 
@@ -99,7 +99,7 @@ If you receive the error `temporary failure resolving 'ports.ubuntu.com'` upon r
 <hr />
 
 
-### Enable the SSH Service
+### Enable the ssh Service
 1. Check that the SSH service is running.
 ```
 sudo systemctl status sshd
@@ -115,7 +115,7 @@ sudo systemctl status sshd
 <hr />
 
 
-### Enable SSH key-based authentication 
+### Enable ssh key-based authentication 
 1. Create SSH key
     ```
     ssh-keygen -t rsa -b 4096 -C "<username>@hostname" -f ~/.ssh/<keyname>
@@ -135,7 +135,7 @@ sudo systemctl status sshd
 <hr />
 
 
-### Secure SSH config in RPI
+### Secure ssh config in rpi
 > **Note:** Reference [https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings](https://webdock.io/en/docs/how-guides/security-guides/ssh-security-configuration-settings) and access the SSH configuration file using `sudo nano /etc/ssh/sshd_config`
 
 1. Open SSH config and follow the referenced link above to tweak settings.
@@ -144,7 +144,7 @@ sudo systemctl status sshd
 <hr />
 
 
-### Enable SSH remote access on a specific port at the internet gateway.
+### Enable ssh remote access on a specific port at the internet gateway
 1. Log in to router.
 2. Open an external port <PORT NUMBER> on RPI external IP 124.248.134.230.
 3. Forward to internal port 22.
@@ -171,7 +171,7 @@ sudo cat /var/log/auth.log
 <hr />
 
 
-### Enable SSH remote Git access from server
+### Enable ssh remote git access from server
 
 1. Create an SSH key on the server (see above example).
 2. Copy the public key contents, log in to your Github account, and enter the key data into a new PGP key entry under your Github account in _Settings/Encryption Keys/Add New Key_
@@ -192,16 +192,16 @@ git config --global user.email "<email address>" && git config --global user.nam
 ```
 5. Clone this repository.
 ```
-git clone git@github.com:shawngerrard/pulumi-litrepublic-www-dev.git
+git clone git@github.com:shawngerrard/asterion-as-code.git
 ```
 
 <hr />
 
 
-## Configure Ubuntu Local Storage
+## Configure ubuntu local storage
 By default, the RPI Imager will create a volume on the USB flash disk. If you're happy with this, you can skip this section. Otherwise, you'll need to do some work to mount any attached volumes to the node.
 
-### Configure Ubuntu Storage Volumes
+### Configure ubuntu storage volumes
 First, attach your storage if it's not already attached. Then check that your filesystem has been mounted automatically - it's quite likely that it hasn't.
 
 ```
@@ -248,7 +248,7 @@ cd /mnt/ && sudo mkdir -p data/k3s
 <hr />
 
 
-## Install Python 
+## Install python 
 We must install Python to be able to use this repository with Pulumi, as it uses Python to define our infrastructure as code through Pulumi.
 
 To install Python, run:
@@ -259,11 +259,11 @@ sudo apt install python3-venv python3-pip
 <hr />
 
 
-## Setup environment
+## Setup local environment
 If you have followed the [introductory guide](../README.org) and have Pulumi CLI installed on your local machine, it's time to configure Pulumi to operate our RPI stacks remotely from this local machine.
 
 
-### Initialise an existing Pulumi Project
+### Initialise an existing pulumi project
 To get started with Pulumi, lets initialise our project, making sure we are in the right directory, have the python [virtual environment](https://docs.python.org/3/library/venv.html) activated, and have installed our python dependencies with [pip](https://pypi.org/project/pip/).
 
 ```
@@ -290,15 +290,14 @@ This is the key that will be added to the infrastructure virtual machines so ens
 Note: If you need to generate a new key you can run `ssh-keygen -t rsa -b 4096 -C <comment>`.
 
 ```
-export keyname="mandalore-rpi"
+export keyname="asterion"
 cat ~/.ssh/${keyname}.pub | pulumi config set publickey
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
 echo 124.248.134.230:6833 | pulumi config set ip_address
-cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
 ```
 
 
-### Setup Default User with Administrative Priviledges
+### Setup default user with administrative priviledges
 To be able to install K3S via Pulumi without errors, we need to provide the default Ubuntu user (*asterion*) with `sudo` privileges. 
 
 We'll achieve this by creating a *sudo user profile* on the remote RPI.
