@@ -267,8 +267,11 @@ If you have followed the [introductory guide](../README.org) and have Pulumi CLI
 To get started with Pulumi, lets initialise our project, making sure we are in the right directory, have the python [virtual environment](https://docs.python.org/3/library/venv.html) activated, and have installed our python dependencies with [pip](https://pypi.org/project/pip/).
 
 ```
-# Start from the infra directory and initialise
+# Start from the infra directory and initialize pulumi stack
 cd infra-rpi && pulumi stack init dev
+
+# Initialize local virtual environment
+python3 -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate
