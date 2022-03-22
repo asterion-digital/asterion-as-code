@@ -31,3 +31,10 @@ spec:
               value: "wordpress"
             - name: MARIADB_DATABASE
               value: "wordpress"
+          volumeMounts:
+            - mountPath: "/var/lib/mysql"
+              name: mariadb-vol
+      volumes: 
+          - name: mariadb-vol
+            persistentVolumeClaim:
+              claimName: mariadb-pvc

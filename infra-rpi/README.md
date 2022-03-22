@@ -231,14 +231,31 @@ Once this is done, exit `ctrl+c` and reboot `reboot now`.
 # Format the new partition with the `ext4` fs type
 sudo mkfs.ext4 /dev/sda1
 
+# Attach a label to the new partition for easy reference
+sudo e2label /dev/sda1 asterion-fs
+
 # Create the directory on the volume that will be the default location of the mount point path
-cd /mnt/ && sudo mkdir -p data/k3s
+cd /mnt/ && sudo mkdir -p data
 
 # Mount the volume to the mount point path set above
-sudo mount /dev/sda1 /mnt/data/k3s
+sudo mount /dev/sda1 /mnt/data/
 
 # Confirm the mount process succeeded
 df -h
+```
+
+
+### Enable persistent volume mounting
+We've mounted the filesystem, but once we reboot this mount configuration will be lost.
+
+For persistant configuration, we must run the following commands to update ubuntu startup filesystem tables with the mounts we want to persistent:
+
+```
+# Add mountpoint to the labelled partition in fstab
+echo "LABEL=asterion-fs /mnt/data ext4 defaults,errors=remount-ro 0 1" | sudo tee -a /etc/fstab
+
+# Reboot
+reboot now
 ```
 
 <hr />
