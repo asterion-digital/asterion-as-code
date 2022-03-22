@@ -13,3 +13,12 @@ image:
 service:
   type: NodePort
   port: 3306
+
+  # persistence:
+  #   ## @param primary.persistence.enabled Enable persistence on MariaDB primary replicas using a `PersistentVolumeClaim`. If false, use emptyDir
+  #   ##
+  #   enabled: true
+  #   storageClass: "asterion-dev-sc-localfs1"
+  #   accessModes:
+  #     - ReadWriteOnce
+  #   size: 10Gi

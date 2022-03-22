@@ -3,11 +3,12 @@
 import pulumi
 import random
 from pulumi_kubernetes.apps.v1 import Deployment, DeploymentSpecArgs
+from pulumi_kubernetes.core.v1 import ContainerArgs,PodSpecArgs, PodTemplateSpecArgs
+from pulumi_kubernetes.helm.v3 import Release, ReleaseArgs, RepositoryOptsArgs, Chart, LocalChartOpts
 from pulumi_kubernetes.helm.v3.helm import ChartOpts
 from pulumi_kubernetes.meta.v1 import LabelSelectorArgs, ObjectMetaArgs
-from pulumi_kubernetes.core.v1 import ContainerArgs, PodSpecArgs, PodTemplateSpecArgs
-from pulumi_kubernetes.helm.v3 import Release, ReleaseArgs, RepositoryOptsArgs, Chart, LocalChartOpts
 
+# Deploy mariadb helm chart pod
 mariadb = Chart(
     "wpdev-mariadb",
     LocalChartOpts(
@@ -15,6 +16,7 @@ mariadb = Chart(
     )
 )
 
+# Deploy wordpress helm chart pod
 wordpress = Chart(
     "wpdev-wordpress",
     LocalChartOpts(

@@ -35,3 +35,12 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# persistence:
+#   enabled: true
+#   storageClass: "asterion-dev-sc-localfs1"
+#   accessModes:
+#     - ReadWriteOnce
+#   accessMode: ReadWriteOnce
+#   size: 10Gi
+#   dataSource: {}
+#   existingClaim: ""
