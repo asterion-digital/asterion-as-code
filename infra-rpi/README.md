@@ -96,7 +96,7 @@ If you receive the error `temporary failure resolving 'ports.ubuntu.com'` upon r
     - Once restarted, try `sudo apt-get update` again.
 
 
-### Enable the ssh Service
+### Enable the ssh service
 1. Check that the SSH service is running.
 ```
 sudo systemctl status sshd
@@ -230,9 +230,6 @@ Once this is done, exit `ctrl+c` and reboot `reboot now`.
 ```
 # Format the new partition with the `ext4` fs type
 sudo mkfs.ext4 /dev/sda1
-
-# Create an easily-identifiable label for the fs
-e2label /dev/sda1 asterion-fs
 
 # Create the directory on the volume that will be the default location of the mount point path
 cd /mnt/ && sudo mkdir -p data/k3s

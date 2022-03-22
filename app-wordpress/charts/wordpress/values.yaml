@@ -1,15 +1,6 @@
 # Default values for wordpress.
 # Declare variables to be passed into your templates.
 
-global:
-  imageRegistry: ""
-  ## E.g.
-  ## imagePullSecrets:
-  ##   - myRegistryKeySecretName
-  ##
-  imagePullSecrets: []
-  storageClass: ""
-
 replicaCount: 1
 
 image:
@@ -44,12 +35,12 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-persistence:
-  enabled: true
-  storageClass: "asterion-dev-sc-localfs1"
-  accessModes:
-    - ReadWriteOnce
-  accessMode: ReadWriteOnce
-  size: 10Gi
-  dataSource: {}
-  existingClaim: ""
+# persistence:
+#   enabled: true
+#   storageClass: "asterion-dev-sc-localfs1"
+#   accessModes:
+#     - ReadWriteOnce
+#   accessMode: ReadWriteOnce
+#   size: 10Gi
+#   dataSource: {}
+#   existingClaim: ""
