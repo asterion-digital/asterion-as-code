@@ -31,3 +31,10 @@ spec:
              value: "{{ .Values.database.name }}"
            - name: WORDPRESS_DB_USER
              value: "{{ .Values.database.user }}"
+          volumeMounts:
+            - mountPath: "/var/www/html"
+              name: wordpress-vol
+      volumes: 
+          - name: wordpress-vol
+            persistentVolumeClaim:
+              claimName: wordpress-pvc
