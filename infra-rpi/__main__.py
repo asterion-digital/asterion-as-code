@@ -10,11 +10,11 @@ config = pulumi.Config()
 # Get settings from pulumi config
 public_key = config.require('publickey')
 private_key = config.require_secret('privatekey')
-ip_address = config.require('ip_address')
+server_ip_address = config.require('ip_address')
 
-# Define a remote provider connection
+# Define a remote provider connection to the asterion server
 connection = command.remote.ConnectionArgs(
-    host=ip_address, 
+    host=server_ip_address, 
     user='asterion',
     private_key=private_key,
     port=6833

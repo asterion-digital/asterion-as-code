@@ -333,6 +333,8 @@ pulumi up --yes
 
 With our stack now running, lets retrieve the [k3s kubeconfig](https://rancher.com/docs/rke/latest/en/kubeconfig/) file and set this up in our local `infra-rpi` directory so that we can interact with the infrastructure later on to deploy applications.
 
+> **Note:** If you've connected directly to the server (as in the case of denying external traffic) and intend to deploy the stack from there, you can substitute the next commands with `sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config`.
+
 ```
 # Ensure kube file exists
 mkdir ~/.kube
@@ -343,6 +345,9 @@ pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
 # Sed replace the kubeconfig ip
 ip=$(pulumi stack output "Infra server public ip")
 sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
+
+# Set the kubeconfig file
+cp asterion-infra-kubeconfig ~/.kube/config
 ```
 
 <hr />
