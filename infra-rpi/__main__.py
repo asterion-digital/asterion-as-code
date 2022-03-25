@@ -22,18 +22,25 @@ connection = command.remote.ConnectionArgs(
 
 # Declare command to install k3s on the remote node
 install_cmd = Output.concat(
-    "curl -sfL https://get.k3s.io | sh -s - server --tls-san ", ip_address, " --write-kubeconfig-mode 644 --no-deploy traefik --no-deploy servicelb --data-dir /mnt/data/k3s"
+    "curl -sfL https://get.k3s.io | sh -s - server --tls-san ", server_ip_address, " --write-kubeconfig-mode 644 --no-deploy traefik --no-deploy servicelb --data-dir /mnt/data/k3s"
+    )
+
+# Declare command to uninstall k3s on the remote node
+uninstall_cmd = Output.concat(
+    "/usr/local/bin/k3s-uninstall.sh"
     )
 
 # Send the k3s installation command to the remote note
 install_k3s = command.remote.Command(
-    'asterion-infra-rpi-install-k3s',
+    'asterion-infra-rpi-k3s-installer',
     connection=connection,
-    create=install_cmd.apply(lambda v: v)
+    create=install_cmd.apply(lambda v: v),
+    delete=uninstall_cmd.apply(lambda v: v)
 )
 
 # Declare command to retrieve kubeconfig from the remote node
-retrieve_kubeconfig = command.remote.Command('asterion-infra-retrieve-kubeconfig',
+retrieve_kubeconfig = command.remote.Command(
+    'asterion-infra-retrieve-kubeconfig',
     connection=connection,
     create='cat /etc/rancher/k3s/k3s.yaml',
     opts=pulumi.ResourceOptions(depends_on=[install_k3s])
@@ -41,4 +48,4 @@ retrieve_kubeconfig = command.remote.Command('asterion-infra-retrieve-kubeconfig
 
 # Export output to the terminal window
 pulumi.export('Infra server kubeconfig', retrieve_kubeconfig.stdout)
-pulumi.export('Infra server public ip', ip_address)
+pulumi.export('Infra server public ip', server_ip_address)

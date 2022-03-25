@@ -303,6 +303,7 @@ This is the key that will be added to the infrastructure virtual machines so ens
 Note: If you need to generate a new key you can run `ssh-keygen -t rsa -b 4096 -C <comment>`.
 
 ```
+# Set pulumi configuration values
 export keyname="asterion"
 cat ~/.ssh/${keyname}.pub | pulumi config set publickey
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
