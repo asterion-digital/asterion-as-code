@@ -1,0 +1,4 @@
+*.pyc
+venv/
+Pulumi.dev.yaml
+asterion-infra-kubeconfig

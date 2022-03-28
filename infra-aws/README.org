@@ -13,7 +13,10 @@ To get started lets initialise our project, making sure we are in the right dire
 #+NAME: Setup environment
 #+begin_src tmate
 # Start from the infra directory and initialise
-cd infra && pulumi stack init asterion-digital/dev
+cd infra-aws && pulumi stack init asterion-digital/dev
+
+# Create virtual environment
+python3 -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate
@@ -36,6 +39,7 @@ Note: If you need to generate a new key you can run ~ssh-keygen -t rsa -b 4096 -
 export keyname="asterion"
 cat ~/.ssh/${keyname}.pub | pulumi config set publickey
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
+echo "ap-southeast-2"     | pulumi config set aws:region
 #+end_src
 
 
@@ -55,9 +59,6 @@ With our stack now running, lets retrieve the [[https://rancher.com/docs/rke/lat
 
 #+NAME: Retrieving kubeconfig
 #+begin_src tmate
-# Ensure kube file exists
-mkdir ~/.kube
-
 # Output kubeconfig to file
 pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
 

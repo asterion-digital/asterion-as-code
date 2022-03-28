@@ -12,7 +12,7 @@ Before we begin lets ensure we have our local ~KUBECONFIG~ environment variable 
 
 #+NAME: Export kubeconfig
 #+begin_src tmate
-export KUBECONFIG=../infra/asterion-infra-kubeconfig
+export KUBECONFIG=../infra-aws/asterion-infra-kubeconfig
 #+end_src
 
 
