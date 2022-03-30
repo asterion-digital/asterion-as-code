@@ -307,7 +307,8 @@ Note: If you need to generate a new key you can run `ssh-keygen -t rsa -b 4096 -
 export keyname="asterion"
 cat ~/.ssh/${keyname}.pub | pulumi config set publickey
 cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
-echo 124.248.134.230 | pulumi config set ip_address
+echo 124.248.134.230      | pulumi config set ip_address
+pulumi config set kube_path ../asterion-infra-kubeconfig
 ```
 
 
@@ -323,6 +324,15 @@ We'll achieve this by creating a *sudo user profile* on the remote RPI.
 sudo touch /etc/sudoers.d/asterion-sudo-profile && echo "asterion ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/asterion-sudo-profile
 ```
 
+For this setup, we will also need to create a sudo user profile on the local machine.
+
+```
+# Create a sudo profile for the local user on the local machine
+sudo touch /etc/sudoers.d/asterion-infra-sudo-profile && echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/asterion-infra-sudo-profile
+```
+
+> **Note:** In production, these sudo credentials should be more constrained and removed after the initial infrastructure deployment.
+
 
 ### Create stack and retrieve kubeconfig
 
@@ -330,25 +340,6 @@ Once we have our local pulumi configuration set we can bring up the infrastructu
 
 ```
 pulumi up --yes
-```
-
-With our stack now running, lets retrieve the [k3s kubeconfig](https://rancher.com/docs/rke/latest/en/kubeconfig/) file and set this up in our local `infra-rpi` directory so that we can interact with the infrastructure later on to deploy applications.
-
-> **Note:** If you've connected directly to the server (as in the case of denying external traffic) and intend to deploy the stack from there, you can substitute the next commands with `sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config`.
-
-```
-# Ensure kube file exists
-mkdir ~/.kube
-
-# Output kubeconfig to file
-pulumi stack output "Infra server kubeconfig" > asterion-infra-kubeconfig
-
-# Sed replace the kubeconfig ip
-ip=$(pulumi stack output "Infra server public ip")
-sed -i "s/127.0.0.1/${ip}/g" asterion-infra-kubeconfig
-
-# Set the kubeconfig file
-cp asterion-infra-kubeconfig ~/.kube/config
 ```
 
 <hr />
