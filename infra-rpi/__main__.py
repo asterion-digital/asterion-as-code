@@ -51,7 +51,7 @@ save_kubeconfig_cmd = Output.concat(
 save_local_kubeconfig = command.local.Command(
     'asterion-infra-rpi-save-local-kubeconfig',
     create=save_kubeconfig_cmd.apply(lambda v: v),
-    delete="rm -rf ../asterion-infra-kubeconfig",
+    delete="rm -rf ../asterion-infra-kubeconfig && sudo rm -rf /etc/sudoers.d/asterion-infra-sudo-profile",
     opts=pulumi.ResourceOptions(depends_on=[output_kubeconfig])
 )
 
