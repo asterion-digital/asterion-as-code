@@ -11,8 +11,9 @@ config = pulumi.Config()
 public_key = config.require('publickey')
 private_key = config.require_secret('privatekey')
 server_ip_address = config.require('ip_address')
+kube_path = config.require('kube_path')
 
-# Define a remote provider connection to the asterion server
+# Define a provider connection to the remote asterion server
 connection = command.remote.ConnectionArgs(
     host=server_ip_address, 
     user='asterion',
@@ -21,24 +22,39 @@ connection = command.remote.ConnectionArgs(
     )
 
 # Declare command to install k3s on the remote node
-install_cmd = Output.concat(
-    "curl -sfL https://get.k3s.io | sh -s - server --tls-san ", ip_address, " --write-kubeconfig-mode 644 --no-deploy traefik --no-deploy servicelb --data-dir /mnt/data/k3s"
+install_k3s_cmd = Output.concat(
+    "curl -sfL https://get.k3s.io | sh -s - server --tls-san ", server_ip_address, " --write-kubeconfig-mode 644 --no-deploy traefik --no-deploy servicelb --data-dir /mnt/data/k3s"
     )
 
-# Send the k3s installation command to the remote note
+# Register k3s install on create and uninstall on delete with the remote node
 install_k3s = command.remote.Command(
-    'asterion-infra-rpi-install-k3s',
+    'asterion-infra-rpi-k3s-installer',
     connection=connection,
-    create=install_cmd.apply(lambda v: v)
+    create=install_k3s_cmd.apply(lambda v: v),
+    delete="/usr/local/bin/k3s-uninstall.sh"
 )
 
-# Declare command to retrieve kubeconfig from the remote node
-retrieve_kubeconfig = command.remote.Command('asterion-infra-retrieve-kubeconfig',
+# Output the kubeconfig on the remote node to terminal
+output_kubeconfig = command.remote.Command(
+    'asterion-infra-rpi-retrieve-kubeconfig',
     connection=connection,
-    create='cat /etc/rancher/k3s/k3s.yaml',
+    create="cat /etc/rancher/k3s/k3s.yaml",
     opts=pulumi.ResourceOptions(depends_on=[install_k3s])
 )
 
+# Use concat to print the pulumi stdout to a kubeconfig file in the local environment
+save_kubeconfig_cmd = Output.concat(
+    "echo '", output_kubeconfig.stdout, "' > ../asterion-infra-kubeconfig && sed -i 's/127.0.0.1/", server_ip_address, "/g' ../asterion-infra-kubeconfig"
+    )
+
+# Save the local kubernetes configuration file
+save_local_kubeconfig = command.local.Command(
+    'asterion-infra-rpi-save-local-kubeconfig',
+    create=save_kubeconfig_cmd.apply(lambda v: v),
+    delete="rm -rf ../asterion-infra-kubeconfig && sudo rm -rf /etc/sudoers.d/asterion-infra-sudo-profile",
+    opts=pulumi.ResourceOptions(depends_on=[output_kubeconfig])
+)
+
 # Export output to the terminal window
-pulumi.export('Infra server kubeconfig', retrieve_kubeconfig.stdout)
-pulumi.export('Infra server public ip', ip_address)
+pulumi.export('Infra server kubeconfig', output_kubeconfig.stdout)
+pulumi.export('Infra server public ip', server_ip_address)

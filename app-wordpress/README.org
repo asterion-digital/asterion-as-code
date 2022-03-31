@@ -12,7 +12,15 @@ Before we begin lets ensure we have our local ~KUBECONFIG~ environment variable 
 
 #+NAME: Export kubeconfig
 #+begin_src tmate
-export KUBECONFIG=../infra-aws/asterion-infra-kubeconfig
+export KUBECONFIG=../asterion-infra-kubeconfig
+#+end_src
+
+Let's also set environment variables to reference our infra-stacks. Be sure to replace ~ORG~ with the name of your Pulumi organization.
+
+#+NAME: Configure pulumi
+#+begin_src tmate
+pulumi config set rpiInfraStack ORG/asterion-rpi-infra/dev
+pulumi config set awsInfraStack ORG/asterion-aws-infra/dev
 #+end_src
 
 
