@@ -1,4 +1,7 @@
 """A Python Pulumi program"""
+# 
+# This code will setup kubernetes infrastructure on a Raspberry Pi with Ubuntu 21.10 installed.
+#
 
 import pulumi
 import pulumi_command as command
@@ -58,3 +61,4 @@ save_local_kubeconfig = command.local.Command(
 # Export output to the terminal window
 pulumi.export('Infra server kubeconfig', output_kubeconfig.stdout)
 pulumi.export('Infra server public ip', server_ip_address)
+pulumi.export('Github actions test', 'succeeded')
