@@ -1,9 +1,11 @@
 name: Pulumi
 on:
-  - pull_request
+  push:
+    branches:
+      - master
 jobs:
-  preview:
-    name: Preview
+  update:
+    name: Update AWS Infrastructure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,7 +21,7 @@ jobs:
       - run: pip install -r requirements.txt
       - uses: pulumi/actions@v3
         with:
-          command: preview
+          command: up
           stack-name: dev
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
