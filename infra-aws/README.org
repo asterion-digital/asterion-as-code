@@ -42,6 +42,8 @@ cat ~/.ssh/${keyname}     | pulumi config set --secret privatekey
 echo "ap-southeast-2"     | pulumi config set aws:region
 #+end_src
 
+If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].
+
 
 * Create stack and retrieve kubeconfig
 
