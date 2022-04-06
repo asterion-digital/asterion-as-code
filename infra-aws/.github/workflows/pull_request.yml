@@ -3,7 +3,7 @@ on:
   - pull_request
 jobs:
   preview:
-    name: Preview
+    name: Preview Stack
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,9 +17,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - run: pip install -r requirements.txt
+        working-directory: infra-aws
       - uses: pulumi/actions@v3
         with:
           command: preview
           stack-name: dev
+          working-directory: infra-aws
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
