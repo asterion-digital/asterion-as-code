@@ -32,11 +32,10 @@ jobs:
         env:
           AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
           AWS_PUBLIC_KEY: ${{ secrets.AWS_PUBLIC_KEY }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Deploy the project dev stack
         uses: pulumi/actions@v3
         with:
           command: up
           stack-name: dev
           work-dir: infra-aws
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
