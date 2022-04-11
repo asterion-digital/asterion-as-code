@@ -28,7 +28,6 @@ jobs:
       - name: Install Pulumi project dependencies
         run: pip install -r requirements.txt
       - name: Configure Pulumi project
-        uses: pulumi/actions@v3
         run: pulumi stack select dev && echo "$AWS_PUBLIC_KEY" | pulumi config set publickey && echo "$AWS_PRIVATE_KEY" | pulumi config set privatekey && echo "ap-southeast-2" | pulumi config set aws:region
         env:
           AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
@@ -40,3 +39,5 @@ jobs:
           command: up
           stack-name: dev
           work-dir: infra-aws
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
