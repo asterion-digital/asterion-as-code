@@ -9,7 +9,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: aws-infra
+        working-directory: infra-aws
     name: Update AWS infrastructure
     runs-on: ubuntu-latest
     steps:

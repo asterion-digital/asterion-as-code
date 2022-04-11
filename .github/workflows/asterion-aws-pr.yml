@@ -6,7 +6,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: aws-infra
+        working-directory: infra-aws
     name: Preview AWS Infrastructure
     runs-on: ubuntu-latest
     steps:
