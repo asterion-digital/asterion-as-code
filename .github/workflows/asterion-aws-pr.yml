@@ -1,23 +1,31 @@
-name: Pulumi
+name: asterion-aws-pr
 on:
   - pull_request
 jobs:
   preview:
+    defaults:
+      run:
+        shell: bash
+        working-directory: aws-infra
     name: Preview AWS Infrastructure
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Import Github actions
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.x'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-region: ${{ secrets.AWS_REGION }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - run: pip install -r requirements.txt
-      - uses: pulumi/actions@v3
+      - name: Install Pulumi project dependencies
+        run: pip install -r requirements.txt
+      - name: Preview the project dev stack
+        uses: pulumi/actions@v3
         with:
           command: preview
           stack-name: dev
