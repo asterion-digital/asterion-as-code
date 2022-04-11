@@ -1,6 +1,8 @@
-name: asterion-aws-pr
+name: asterion-aws-ci-pr
 on:
-  - pull_request
+  pull_request:
+    branches:
+      - master
 jobs:
   preview:
     defaults:
@@ -24,6 +26,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Install Pulumi project dependencies
         run: pip install -r requirements.txt
+      - name: Select Pulumi stack and configure project
+        run: pulumi stack select dev && echo "$AWS_PUBLIC_KEY" | pulumi config set publickey && echo "$AWS_PRIVATE_KEY" | pulumi config set privatekey && echo "ap-southeast-2" | pulumi config set aws:region
+        env:
+          AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+          AWS_PUBLIC_KEY: ${{ secrets.AWS_PUBLIC_KEY }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Preview the project dev stack
         uses: pulumi/actions@v3
         with:

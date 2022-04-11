@@ -1,4 +1,4 @@
-name: asterion-aws-push
+name: asterion-aws-ci-push
 on:
   push:
     branches:
@@ -27,7 +27,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Install Pulumi project dependencies
         run: pip install -r requirements.txt
-      - name: Configure Pulumi project
+      - name: Select Pulumi stack and configure project
         run: pulumi stack select dev && echo "$AWS_PUBLIC_KEY" | pulumi config set publickey && echo "$AWS_PRIVATE_KEY" | pulumi config set privatekey && echo "ap-southeast-2" | pulumi config set aws:region
         env:
           AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
