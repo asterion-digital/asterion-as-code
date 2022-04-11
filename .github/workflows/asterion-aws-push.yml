@@ -1,4 +1,4 @@
-name: asterion-aws-ci-push
+name: asterion-aws-infra-ci-push
 on:
   push:
     branches:
