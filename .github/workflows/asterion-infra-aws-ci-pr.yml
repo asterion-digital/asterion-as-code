@@ -1,16 +1,15 @@
-name: asterion-aws-infra-ci-push
+name: asterion-infra-aws-ci-pr
 on:
-  push:
+  pull_request:
     branches:
       - master
-      - feature
 jobs:
-  update:
+  preview:
     defaults:
       run:
         shell: bash
         working-directory: infra-aws
-    name: Update AWS infrastructure
+    name: Preview AWS Infrastructure
     runs-on: ubuntu-latest
     steps:
       - name: Import Github actions
@@ -19,7 +18,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -33,10 +32,10 @@ jobs:
           AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
           AWS_PUBLIC_KEY: ${{ secrets.AWS_PUBLIC_KEY }}
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      - name: Deploy the project dev stack
+      - name: Preview the project dev stack
         uses: pulumi/actions@v3
         with:
-          command: up
+          command: preview
           stack-name: dev
           work-dir: infra-aws
         env:
