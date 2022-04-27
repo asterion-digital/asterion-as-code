@@ -7,11 +7,34 @@ import pulumi_aws as aws
 import pulumi_command as command
 from pulumi import Output
 
-# Initialise configuration
+# Initialize configuration
 config = pulumi.Config()
 public_key = config.require('publickey')
 private_key = config.require_secret('privatekey')
 extip = requests.get('http://checkip.amazonaws.com/')
+
+# Initialize control variables
+org_exists = False
+
+# Determine if account is already a member of an organization
+organization = aws.organizations.get_organization()
+if organization.id != "" or organization.id is not none: org_exists = True
+
+# Setup asterion aws organization if this hasn't been done
+if org_exists: 
+else:
+    org = aws.organizations.Organization("asterion-infra-org",
+        aws_service_access_principals=[
+            "cloudtrail.amazonaws.com",
+            "config.amazonaws.com",
+        ],
+        feature_set="ALL")
+    
+# Export organization info
+pulumi.export('Org unique ID', organization.id)
+pulumi.export('Master account ID', organization.master_account_id)
+pulumi.export('Master account ARN', organization.master_account_arn)
+pulumi.export('Master account email', organization.master_account_email)
 
 # Stand up dedicated vpc and internet gateway
 vpc = aws.ec2.Vpc("asterion-infra-vpc", cidr_block="10.0.0.0/16", enable_dns_hostnames=True)
@@ -82,8 +105,9 @@ instance = aws.ec2.Instance(
     subnet_id=public_subnet.id,
     associate_public_ip_address=True,
 )
-pulumi.export("Infra server public ip", instance.public_ip)
 
+# Output the public ip
+pulumi.export("Infra server public ip", instance.public_ip)
 
 # Setup a connection to the infra server instance
 connection = command.remote.ConnectionArgs(host=instance.public_ip, user='ubuntu',private_key=private_key)
