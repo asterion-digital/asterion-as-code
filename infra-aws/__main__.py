@@ -1,44 +1,19 @@
 """A pulumi program to deploy asterion-digital infra on aws."""
 
 # Import dependencies
+import asterion_organization
 import requests
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
 from pulumi import Output
 
-# Create an asterion organization object
-class asterion_organization:
-
-    # Default constructor
-    def __init__(self, name, org):
-        self.name = name
-        self.org = org
-
-    # Create an aws org for the current account
-    def create_org(self):
-        
-        # Create an organization for this current account
-        self.org = aws.organizations.Organization(self.name,
-            aws_service_access_principals=[
-                "cloudtrail.amazonaws.com",
-                "config.amazonaws.com",
-            ],
-            feature_set="ALL")
-
-    # Check if an aws org exists for this account
-    def org_exists(self):
-        if self.org.id == "" or self.org.id is none:
-            return False
-        else:
-            return True
-
 # Initialize configuration
 config = pulumi.Config()
 public_key = config.require('publickey')
 private_key = config.require_secret('privatekey')
 extip = requests.get('http://checkip.amazonaws.com/')
-organization = asterion_organization(
+organization = asterion_organization.org(
     'asterion-infra-aws',
     aws.organizations.get_organization())
 
