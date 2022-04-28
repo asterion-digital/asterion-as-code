@@ -1,6 +1,6 @@
 #+TITLE: Asterion infrastructure deployment
 #+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
-#+DATE: <2022-03-12 Sat>
+#+DATE: <2022-04-19 Tue>
 
 
 This repository captures the end to end workflow for deploying asterion digital infrastructure via [[https://www.pulumi.com/][pulumi]].
