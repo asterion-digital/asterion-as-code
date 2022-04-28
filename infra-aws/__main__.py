@@ -7,34 +7,44 @@ import pulumi_aws as aws
 import pulumi_command as command
 from pulumi import Output
 
+# Create an asterion organization object
+class asterion_organization:
+
+    # Default constructor
+    def __init__(self, name, org):
+        self.name = name
+        self.org = org
+
+    # Create an aws org for the current account
+    def create_org(self):
+        
+        # Create an organization for this current account
+        self.org = aws.organizations.Organization(self.name,
+            aws_service_access_principals=[
+                "cloudtrail.amazonaws.com",
+                "config.amazonaws.com",
+            ],
+            feature_set="ALL")
+
+    # Check if an aws org exists for this account
+    def org_exists(self):
+        if self.org.id == "" or self.org.id is none:
+            return False
+        else:
+            return True
+
 # Initialize configuration
 config = pulumi.Config()
 public_key = config.require('publickey')
 private_key = config.require_secret('privatekey')
 extip = requests.get('http://checkip.amazonaws.com/')
+organization = asterion_organization(
+    'asterion-infra-aws',
+    aws.organizations.get_organization())
 
-# Initialize control variables
-org_exists = False
-
-# Determine if account is already a member of an organization
-organization = aws.organizations.get_organization()
-if organization.id != "" or organization.id is not none: org_exists = True
-
-# Setup asterion aws organization if this hasn't been done
-if org_exists: 
-else:
-    org = aws.organizations.Organization("asterion-infra-org",
-        aws_service_access_principals=[
-            "cloudtrail.amazonaws.com",
-            "config.amazonaws.com",
-        ],
-        feature_set="ALL")
-    
-# Export organization info
-pulumi.export('Org unique ID', organization.id)
-pulumi.export('Master account ID', organization.master_account_id)
-pulumi.export('Master account ARN', organization.master_account_arn)
-pulumi.export('Master account email', organization.master_account_email)
+# Activate aws organizations if it hasn't already
+if not organization.org_exists:
+    organization.create_org()
 
 # Stand up dedicated vpc and internet gateway
 vpc = aws.ec2.Vpc("asterion-infra-vpc", cidr_block="10.0.0.0/16", enable_dns_hostnames=True)
