@@ -20,6 +20,7 @@ organization = asterion_organization.org(
 # Activate aws organizations if it hasn't already
 if not organization.org_exists:
     organization.create_org()
+pulumi.export("Asterion aws org ID", organization.org.id)
 
 # Stand up dedicated vpc and internet gateway
 vpc = aws.ec2.Vpc("asterion-infra-vpc", cidr_block="10.0.0.0/16", enable_dns_hostnames=True)
