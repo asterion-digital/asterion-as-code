@@ -1,4 +1,9 @@
-# Create a class that models the asterion aws organization
+"""A pulumi program to deploy asterion-digital oganization to aws."""
+
+import pulumi
+import pulumi_aws as aws
+
+# Blueprint for creating an aws asterion-org object
 class org:
 
     # Default constructor
@@ -23,3 +28,13 @@ class org:
             return False
         else:
             return True
+
+# Create an aws org object for asterion-infra-aws
+organization = org(
+    'asterion-infra-aws',
+    aws.organizations.get_organization())
+
+# Check if the org object is set else set it
+if not organization.org_exists:
+    organization.create_org()
+pulumi.export("Asterion aws org ID", organization.org.id)
