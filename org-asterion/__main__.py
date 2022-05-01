@@ -34,74 +34,25 @@ class org:
         else:
             return True
 
-# Blueprint for creating an aws asterion-ou object
-class ou:
-
-    # Default constructor
-    def __init__(self, name, org, parentid):
-        self.name = name
-        self.org = org
-        self.ou = ou
-        self.parentid = parentid
-
-    # Static method to create an aws organizational unit within the specified organization
-    def create_ou(self):
-
-        # Create an ou for the org
-        self.ou = aws.organizations.OrganizationalUnit(
-            self.name,
-            parent_id=self.parentid
-        )
-
 # Create an aws object for the asterion-infra-aws organization
 asterion_infra_aws_org = org('asterion-infra-aws')
 
 # Check if the asterion aws organization object is set else set it
 if not asterion_infra_aws_org.org_exists:
     asterion_infra_aws_org.create_org()
-pulumi.export("Asterion aws org ID", asterion_infra_aws_org.org.id)
-pulumi.export("Asterion aws org root ID", asterion_infra_aws_org.rootid)
+pulumi.export("Asterion aws org id", asterion_infra_aws_org.org.id)
+pulumi.export("Asterion aws org root id", asterion_infra_aws_org.rootid)
 
-# Create the asterion-infra-aws-ou object with the parent as root
-asterion_infra_aws_ou = ou(
-    'asterion-infra-aws-ou', 
-    asterion_infra_aws_org.org, 
-    asterion_infra_aws_org.rootid
-    )
+# Create asterion infra-aws organizational unit
+asterion_infra_aws = aws.organizations.OrganizationalUnit("asterion-infra-aws", parent_id=asterion_infra_aws_org.rootid)
 
-# Send the ou object to aws for creation
-asterion_infra_aws_ou.create_ou()
-pulumi.export(asterion_infra_aws_ou.name + " ID", asterion_infra_aws_ou.ou.id)
+# Create asterion infra-aws environment ou's
+asterion_infra_aws_dev = aws.organizations.OrganizationalUnit("asterion-infra-aws-dev", parent_id=asterion_infra_aws.id)
+asterion_infra_aws_test = aws.organizations.OrganizationalUnit("asterion-infra-aws-test", parent_id=asterion_infra_aws.id)
+asterion_infra_aws_prod = aws.organizations.OrganizationalUnit("asterion-infra-aws-prod", parent_id=asterion_infra_aws.id)
 
-# Create the asterion-infra-aws-dev-ou object with asterion-infra-aws as the parent
-asterion_infra_aws_dev_ou = ou(
-    'asterion-infra-aws-dev-ou', 
-    asterion_infra_aws_org.org, 
-    asterion_infra_aws_ou.ou.id
-    )
-
-# Send the dev-ou object to aws for creation
-asterion_infra_aws_dev_ou.create_ou()
-pulumi.export(asterion_infra_aws_dev_ou.name + " ID", asterion_infra_aws_dev_ou.ou.id)
-
-# Create the asterion-infra-aws-test-ou object with asterion-infra-aws as the parent
-asterion_infra_aws_test_ou = ou(
-    'asterion-infra-aws-test-ou', 
-    asterion_infra_aws_org.org, 
-    asterion_infra_aws_ou.ou.id
-    )
-
-# Send the test-ou object to aws for creation
-asterion_infra_aws_test_ou.create_ou()
-pulumi.export(asterion_infra_aws_test_ou.name + " ID", asterion_infra_aws_test_ou.ou.id)
-
-# Create the asterion-infra-aws-prod-ou object with asterion-infra-aws as the parent
-asterion_infra_aws_prod_ou = ou(
-    'asterion-infra-aws-prod-ou', 
-    asterion_infra_aws_org.org, 
-    asterion_infra_aws_ou.ou.id
-    )
-
-# Send the prod-ou object to aws for creation
-asterion_infra_aws_prod_ou.create_ou()
-pulumi.export(asterion_infra_aws_prod_ou.name + " ID", asterion_infra_aws_prod_ou.ou.id)
+# Output asterion environment ou id's
+pulumi.export("asterion-infra-aws ou id", asterion_infra_aws.id)
+pulumi.export("Dev ou id", asterion_infra_aws_dev.id)
+pulumi.export("Test ou id", asterion_infra_aws_test.id)
+pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
