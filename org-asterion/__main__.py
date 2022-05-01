@@ -10,17 +10,22 @@ class org:
     def __init__(self, name):
         self.name = name
         self.org = aws.organizations.get_organization()
+        self.rootid = self.org.roots[0].id
 
-    # Create an aws organization for the current account
+    # Static method to create an aws organization
     def create_org(self):
         
         # Create an aws organization for this current account
-        self.org = aws.organizations.Organization(self.name,
+        self.org = aws.organizations.Organization(
+            self.name,
             aws_service_access_principals=[
                 "cloudtrail.amazonaws.com",
                 "config.amazonaws.com",
             ],
             feature_set="ALL")
+        
+        # Set the root id for the aws organization
+        self.rootid = org.roots[0].id
 
     # Check if an aws organization exists for this account
     def org_exists(self):
@@ -29,6 +34,25 @@ class org:
         else:
             return True
 
+# Blueprint for creating an aws asterion-ou object
+class ou:
+
+    # Default constructor
+    def __init__(self, name, org, parentid):
+        self.name = name
+        self.org = org
+        self.ou = ou
+        self.parentid = parentid
+
+    # Static method to create an aws organizational unit within the specified organization
+    def create_ou(self):
+
+        # Create an ou for the org
+        self.ou = aws.organizations.OrganizationalUnit(
+            self.name,
+            parent_id=self.parentid
+        )
+
 # Create an aws object for the asterion-infra-aws organization
 asterion_infra_aws_org = org('asterion-infra-aws')
 
@@ -36,3 +60,14 @@ asterion_infra_aws_org = org('asterion-infra-aws')
 if not asterion_infra_aws_org.org_exists:
     asterion_infra_aws_org.create_org()
 pulumi.export("Asterion aws org ID", asterion_infra_aws_org.org.id)
+pulumi.export("Asterion aws org root ID", asterion_infra_aws_org.rootid)
+
+# Create the asterion-infra-aws-ou object with the parent as root
+asterion_infra_aws_ou = ou(
+    'asterion-infra-aws-ou', 
+    asterion_infra_aws_org.org, 
+    asterion_infra_aws_org.rootid)
+
+# Create the ou object in aws
+asterion_infra_aws_ou.create_ou()
+pulumi.export(asterion_infra_aws_ou.name + " ID", asterion_infra_aws_ou.ou.id)
