@@ -66,8 +66,42 @@ pulumi.export("Asterion aws org root ID", asterion_infra_aws_org.rootid)
 asterion_infra_aws_ou = ou(
     'asterion-infra-aws-ou', 
     asterion_infra_aws_org.org, 
-    asterion_infra_aws_org.rootid)
+    asterion_infra_aws_org.rootid
+    )
 
-# Create the ou object in aws
+# Send the ou object to aws for creation
 asterion_infra_aws_ou.create_ou()
 pulumi.export(asterion_infra_aws_ou.name + " ID", asterion_infra_aws_ou.ou.id)
+
+# Create the asterion-infra-aws-dev-ou object with asterion-infra-aws as the parent
+asterion_infra_aws_dev_ou = ou(
+    'asterion-infra-aws-dev-ou', 
+    asterion_infra_aws_org.org, 
+    asterion_infra_aws_ou.ou.id
+    )
+
+# Send the dev-ou object to aws for creation
+asterion_infra_aws_dev_ou.create_ou()
+pulumi.export(asterion_infra_aws_dev_ou.name + " ID", asterion_infra_aws_dev_ou.ou.id)
+
+# Create the asterion-infra-aws-test-ou object with asterion-infra-aws as the parent
+asterion_infra_aws_test_ou = ou(
+    'asterion-infra-aws-test-ou', 
+    asterion_infra_aws_org.org, 
+    asterion_infra_aws_ou.ou.id
+    )
+
+# Send the test-ou object to aws for creation
+asterion_infra_aws_test_ou.create_ou()
+pulumi.export(asterion_infra_aws_test_ou.name + " ID", asterion_infra_aws_test_ou.ou.id)
+
+# Create the asterion-infra-aws-prod-ou object with asterion-infra-aws as the parent
+asterion_infra_aws_prod_ou = ou(
+    'asterion-infra-aws-prod-ou', 
+    asterion_infra_aws_org.org, 
+    asterion_infra_aws_ou.ou.id
+    )
+
+# Send the prod-ou object to aws for creation
+asterion_infra_aws_prod_ou.create_ou()
+pulumi.export(asterion_infra_aws_prod_ou.name + " ID", asterion_infra_aws_prod_ou.ou.id)
