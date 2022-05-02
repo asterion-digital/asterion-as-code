@@ -7,7 +7,7 @@ import pulumi_aws as aws
 import pulumi_command as command
 from pulumi import Output
 
-# Initialise configuration
+# Initialize configuration
 config = pulumi.Config()
 public_key = config.require('publickey')
 private_key = config.require_secret('privatekey')
@@ -82,8 +82,9 @@ instance = aws.ec2.Instance(
     subnet_id=public_subnet.id,
     associate_public_ip_address=True,
 )
-pulumi.export("Infra server public ip", instance.public_ip)
 
+# Output the public ip
+pulumi.export("Infra server public ip", instance.public_ip)
 
 # Setup a connection to the infra server instance
 connection = command.remote.ConnectionArgs(host=instance.public_ip, user='ubuntu',private_key=private_key)

@@ -45,6 +45,22 @@ echo "ap-southeast-2"     | pulumi config set aws:region
 If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].
 
 
+You will need to add the following secrets into your Github repository to ensure the Github CI/CD pipelines can run as expected. 
+
+Note: You will need Github and AWS CLI's installed to perform the commands below. If you don't have Github CLI, you can use the [[https://github.com][Github UI]] to add this configuration manually.
+
+#+NAME: Export required pulumi configuration to Github
+#+begin_src tmate
+gh secret set AWS_ACCESS_KEY_ID
+cat ~/.ssh/${keyname}     | gh secret set AWS_PRIVATE_KEY
+cat ~/.ssh/${keyname}.pub | gh secret set AWS_PUBLIC_KEY
+echo "ap-southeast-2"     | gh secret set AWS_REGION
+gh secret set AWS_SECRET_ACCESS_KEY
+#+end_src
+
+
+
+
 * Create stack and retrieve kubeconfig
 
 Once we have our local pulumi configuration set we can bring up the infrastructure stack.

@@ -1,0 +1,46 @@
+name: asterion-infra-aws-ci-pr
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  preview:
+    defaults:
+      run:
+        shell: bash
+        working-directory: infra-aws
+    name: Preview AWS Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import Github actions
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Install Pulumi project dependencies
+        run: pip install -r requirements.txt
+      - name: Select Pulumi stack and configure project
+        run: |
+          pulumi stack select dev 
+          echo "$AWS_PUBLIC_KEY" | pulumi config set publickey 
+          echo "$AWS_PRIVATE_KEY" | pulumi config set privatekey 
+          echo "ap-southeast-2" | pulumi config set aws:region
+        env:
+          AWS_PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+          AWS_PUBLIC_KEY: ${{ secrets.AWS_PUBLIC_KEY }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      - name: Preview the project dev stack
+        uses: pulumi/actions@v3
+        with:
+          command: preview
+          stack-name: dev
+          work-dir: infra-aws
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
