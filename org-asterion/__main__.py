@@ -56,3 +56,14 @@ pulumi.export("asterion-infra-aws ou id", asterion_infra_aws.id)
 pulumi.export("Dev ou id", asterion_infra_aws_dev.id)
 pulumi.export("Test ou id", asterion_infra_aws_test.id)
 pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
+
+# Create asterion infra-aws accounts
+new_acc = aws.organizations.Account(
+    "Test account", email="test@asterion.digital", name="Test Account", parent_id=asterion_infra_aws.id
+)
+
+# Output data about the new account
+pulumi.export("Test Account id", new_acc.id)
+pulumi.export("Test Account name", new_acc.name)
+pulumi.export("Test Account email", new_acc.email)
+pulumi.export("Test Account role", new_acc.role_name)
