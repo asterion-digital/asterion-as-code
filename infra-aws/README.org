@@ -13,7 +13,7 @@ To get started lets initialise our project, making sure we are in the right dire
 #+NAME: Setup environment
 #+begin_src tmate
 # Start from the infra directory and initialise
-cd infra-aws && pulumi stack init asterion-digital/dev
+cd infra-aws && pulumi stack init dev
 
 # Create virtual environment
 python3 -m venv venv

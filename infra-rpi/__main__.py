@@ -61,8 +61,4 @@ save_local_kubeconfig = command.local.Command(
 # Export output to the terminal window
 pulumi.export('Infra server kubeconfig', output_kubeconfig.stdout)
 pulumi.export('Infra server public ip', server_ip_address)
-<<<<<<< HEAD
-pulumi.export('Github actions test', 'succeeded')
-=======
 pulumi.export('github actions test', 'successful')
->>>>>>> 3a748231d521d4d8f0ad0c32a5bd48fa021d659c

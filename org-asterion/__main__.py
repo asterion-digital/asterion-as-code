@@ -2,6 +2,8 @@
 
 import pulumi
 import pulumi_aws as aws
+import json
+from pulumi import Config, ResourceOptions, export
 
 # Blueprint for creating an aws asterion-org object
 class org:
@@ -21,6 +23,7 @@ class org:
             aws_service_access_principals=[
                 "cloudtrail.amazonaws.com",
                 "config.amazonaws.com",
+                "account.amazonaws.com",
             ],
             feature_set="ALL")
         
@@ -33,6 +36,28 @@ class org:
             return False
         else:
             return True
+
+# Static method for applying the assumerole policy to iam principals
+def assume_role_policy_for_principal(principal):
+
+    # Return a json assumerole policy template that includes the principal name
+    return json.dumps({
+        'Version': '2012-10-17',
+        'Statement': [
+            {
+                'Sid': 'AllowAssumeRole',
+                'Effect': 'Allow',
+                'Principal': principal,
+                'Action': 'sts:AssumeRole'
+            }
+        ]
+    })
+
+# Obtain pulumi configuration file contents
+config = Config()
+
+# Obtain dev stack iam username from pulumi config file
+new_username = config.require('newUsername')
 
 # Create an aws object for the asterion-infra-aws organization
 asterion_infra_aws_org = org('asterion-infra-aws')
@@ -58,12 +83,53 @@ pulumi.export("Test ou id", asterion_infra_aws_test.id)
 pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
 
 # Create asterion infra-aws accounts
-new_acc = aws.organizations.Account(
-    "Test account", email="test@asterion.digital", name="Test Account", parent_id=asterion_infra_aws.id
+asterion_infra_aws_acc = aws.organizations.Account(
+    "asterion-infra-aws-team", email="2iwavQSRFqhLQ4MoTv4j44f7@asterion.digital", name="Asterion Infra-AWS Full Team", parent_id=asterion_infra_aws.id
+)
+asterion_infra_aws_dev_acc = aws.organizations.Account(
+    "asterion-infra-aws-dev-team", email="czmmaetwpdsmbh9pcrgtfdbe@asterion.digital", name="Asterion Infra-AWS Dev Team", parent_id=asterion_infra_aws_dev.id
+)
+asterion_infra_aws_prod_acc = aws.organizations.Account(
+    "asterion-infra-aws-prod-team", email="sJLPmDyY3GSYNaBrtoTwUo23@asterion.digital", name="Asterion Infra-AWS Prod Team", parent_id=asterion_infra_aws_prod.id
 )
 
-# Output data about the new account
-pulumi.export("Test Account id", new_acc.id)
-pulumi.export("Test Account name", new_acc.name)
-pulumi.export("Test Account email", new_acc.email)
-pulumi.export("Test Account role", new_acc.role_name)
+# Create asterion infra-aws iam users
+new_user = aws.iam.User(
+    'new-user', 
+    name=new_username
+)
+
+# Create an aws access key and apply to users
+new_user_access_key = aws.iam.AccessKey(
+    'new-user-access-key',
+    user=new_user.name,
+    opts=ResourceOptions(additional_secret_outputs=["secret"])
+)
+
+# Create a role to administer ec2 instances
+allow_ec2_admin_role = aws.iam.Role('allow-ec2-administration',
+    description='Allow administration of ec2 instances',
+    assume_role_policy=new_user.arn.apply(lambda arn:
+        assume_role_policy_for_principal({'AWS': arn})
+    )
+)
+
+# Create an allow policy and apply to the role
+allow_all_ec2_policy = aws.iam.RolePolicy('allow-ec2-administration-policy', 
+    role=allow_ec2_admin_role,
+    policy=json.dumps({
+        'Version': '2012-10-17',
+        'Statement': [{
+            'Sid': 'AllowEC2Admin',
+            'Effect': 'Allow',
+            'Resource': '*',
+            'Action': 'ec2:*',
+        }],
+    }),
+    opts=ResourceOptions(parent=allow_ec2_admin_role)
+)
+
+# Export the role identifier and access keys to the environment
+export('roleArn', allow_ec2_admin_role.arn)
+export('accessKeyId', new_user_access_key.id)
+export('secretAccessKey', new_user_access_key.secret)
