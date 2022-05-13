@@ -1,3 +1,3 @@
 config:
   aws:region: ap-southeast-2
-  org-asterion:newUsername: administrator
+  org-asterion:newUsername: shawn

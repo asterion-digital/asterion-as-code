@@ -37,22 +37,6 @@ class org:
         else:
             return True
 
-# Static method for applying the assumerole policy to iam principals
-def assume_role_policy_for_principal(principal):
-
-    # Return a json assumerole policy template that includes the principal name
-    return json.dumps({
-        'Version': '2012-10-17',
-        'Statement': [
-            {
-                'Sid': 'AllowAssumeRole',
-                'Effect': 'Allow',
-                'Principal': principal,
-                'Action': 'sts:AssumeRole'
-            }
-        ]
-    })
-
 # Obtain pulumi configuration file contents
 config = Config()
 
@@ -84,14 +68,41 @@ pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
 
 # Create asterion infra-aws accounts
 asterion_infra_aws_acc = aws.organizations.Account(
-    "asterion-infra-aws-team", email="2iwavQSRFqhLQ4MoTv4j44f7@asterion.digital", name="Asterion Infra-AWS Full Team", parent_id=asterion_infra_aws.id
+    "asterion-infra-aws-team", 
+    email="2iwavQSRFqhLQ4MoTv4j44f7@asterion.digital", 
+    name="Asterion Infra-AWS Full Team", 
+    parent_id=asterion_infra_aws.id
 )
 asterion_infra_aws_dev_acc = aws.organizations.Account(
-    "asterion-infra-aws-dev-team", email="czmmaetwpdsmbh9pcrgtfdbe@asterion.digital", name="Asterion Infra-AWS Dev Team", parent_id=asterion_infra_aws_dev.id
+    "asterion-infra-aws-dev-team", 
+    email="czmmaetwpdsmbh9pcrgtfdbe@asterion.digital", 
+    name="Asterion Infra-AWS Dev Team", 
+    parent_id=asterion_infra_aws_dev.id
 )
 asterion_infra_aws_prod_acc = aws.organizations.Account(
-    "asterion-infra-aws-prod-team", email="sJLPmDyY3GSYNaBrtoTwUo23@asterion.digital", name="Asterion Infra-AWS Prod Team", parent_id=asterion_infra_aws_prod.id
+    "asterion-infra-aws-prod-team", 
+    email="sJLPmDyY3GSYNaBrtoTwUo23@asterion.digital", 
+    name="Asterion Infra-AWS Prod Team", 
+    parent_id=asterion_infra_aws_prod.id
 )
+
+# Create a list containing member account id's
+child_account_ids = [asterion_infra_aws.id, asterion_infra_aws_dev.id, asterion_infra_aws_prod.id]
+
+# Initialize a list to contain policy statements allowing sub-account roles to be assumed from the management account
+admin_allow_assume_policy_statements = []
+
+# Create a list of `assumerole` policy statements covering each asterion sub-account
+for child_id in child_account_ids:
+    admin_allow_assume_policy_statements.append(
+        json.dumps(
+            {
+                "Effect": "Allow",
+                "Action": ["sts:AssumeRole"],
+                "Resource": "arn:aws:iam::" + child_id + ":role/Administrator"
+            }
+        )
+    )
 
 # Create asterion infra-aws iam users
 new_user = aws.iam.User(
@@ -107,29 +118,42 @@ new_user_access_key = aws.iam.AccessKey(
 )
 
 # Create a role to administer ec2 instances
-allow_ec2_admin_role = aws.iam.Role('allow-ec2-administration',
-    description='Allow administration of ec2 instances',
-    assume_role_policy=new_user.arn.apply(lambda arn:
-        assume_role_policy_for_principal({'AWS': arn})
-    )
+# admin_role = aws.iam.Role('asterion-admin-role',
+#     description='Allow administration of asterion sub-accounts',
+#     assume_role_policy=new_user.arn.apply(lambda arn:
+#         assume_role_policy_for_principal({'AWS': arn})
+#     )
+# )
+admin_role = aws.iam.Role('asterion-admin-role',
+    description='Allow administration of asterion sub-accounts'
+)
+
+# Create a role policy using the policy statements list
+admin_assume_role_policy = aws.iam.Policy(
+    'asterion-assume-admin-role-policy',
+    description="Policies to allow admin role assumption in all asterion environments",
+    policy=json.dumps({
+        "Version":"2012-10-17",
+        "Statement": admin_allow_assume_policy_statements
+    })
 )
 
 # Create an allow policy and apply to the role
-allow_all_ec2_policy = aws.iam.RolePolicy('allow-ec2-administration-policy', 
-    role=allow_ec2_admin_role,
-    policy=json.dumps({
-        'Version': '2012-10-17',
-        'Statement': [{
-            'Sid': 'AllowEC2Admin',
-            'Effect': 'Allow',
-            'Resource': '*',
-            'Action': 'ec2:*',
-        }],
-    }),
-    opts=ResourceOptions(parent=allow_ec2_admin_role)
-)
+# admin_role_policy = aws.iam.RolePolicy('asterion-admin-role-policy', 
+#     role=admin_role,
+#     policy=json.dumps({
+#         'Version': '2012-10-17',
+#         'Statement': [{
+#             'Sid': 'AllowEC2Admin',
+#             'Effect': 'Allow',
+#             'Resource': '*',
+#             'Action': 'ec2:*',
+#         }],
+#     }),
+#     opts=ResourceOptions(parent=admin_role)
+# )
 
 # Export the role identifier and access keys to the environment
-export('roleArn', allow_ec2_admin_role.arn)
+export('roleArn', root_admin_role.arn)
 export('accessKeyId', new_user_access_key.id)
 export('secretAccessKey', new_user_access_key.secret)

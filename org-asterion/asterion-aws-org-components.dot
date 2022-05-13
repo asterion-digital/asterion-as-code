@@ -1,40 +1,47 @@
 digraph G {
-    subgraph cluster_3 {
+    subgraph cluster_1 {
         
         subgraph cluster_2 {
             style=filled;
             color=grey;
-            label="asterion organization"
+            label="asterion root org unit"
             node [style=filled,color=white];
-            
-                subgraph cluster_7 {
+            root
+
+                subgraph cluster_3 {
                     style=filled;
                     color=lightblue;
-                    node [style=filled,color=white];
-                    label = "asterion infra-aws org unit";
-                    
-                
-                    subgraph cluster_5 {
-                    style=filled;
-                    color=lightyellow;
                     node [style=filled,color=grey];
-                    label = "asterion infra-aws team account";
-                    shawn,james,dj
+                    label = "asterion org unit";
                     
-                        subgraph cluster_6 {
+                    subgraph cluster_4 {
                         style=filled;
-                        color=lightblue;
-                        node [style=filled,color=white];
-                        label = "non-prod";
-                        "assume non-prod admin role"
-                        }
+                        color=lightyellow;
+                        node [style=filled,color=grey];
+                        label = "asterion team account";
+                        shawn,dj,james
                         
-                        subgraph cluster_7 {
-                        style=filled;
-                        color=lightblue;
-                        node [style=filled,color=white,id=prod];
-                        label = "prod";
-                        "assume prod admin role"
+                        subgraph cluster_5 {
+                            style=filled;
+                            color=lightblue;
+                            node [style=filled,color=white];
+                            label = "asterion infra-aws org unit";
+                            
+                            subgraph cluster_6 {
+                                style=filled;
+                                color=lightyellow;
+                                node [style=filled,color=grey];
+                                label = "non-prod account";
+                                "assume non-prod admin role"
+                            }
+                            
+                            subgraph cluster_7 {
+                                style=filled;
+                                color=lightyellow;
+                                node [style=filled,color=grey];
+                                label = "prod account";
+                                "assume prod admin role"
+                            }
                         }
                     }
                 }
@@ -47,4 +54,5 @@ digraph G {
     shawn->"assume non-prod admin role"
     dj->"assume non-prod admin role"
     james->"assume non-prod admin role"
+    }
 }
