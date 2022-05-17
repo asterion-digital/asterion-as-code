@@ -25,6 +25,7 @@ curl -fsSL https://get.pulumi.com | sh
 pulumi version
 #+end_src
 
+Please note that you'll also need to [[https://app.pulumi.com/signin][create a Pulumi account]], and then a Pulumi access token to be able to authenticate with the Pulumi provider service upon first connection.
 
 ** Amazon web services cli
 
