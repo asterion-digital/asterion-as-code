@@ -2,6 +2,8 @@
 
 import pulumi
 import pulumi_aws as aws
+import json
+from pulumi import Config, ResourceOptions, export, Output
 
 # Blueprint for creating an aws asterion-org object
 class org:
@@ -21,6 +23,7 @@ class org:
             aws_service_access_principals=[
                 "cloudtrail.amazonaws.com",
                 "config.amazonaws.com",
+                "account.amazonaws.com",
             ],
             feature_set="ALL")
         
@@ -33,6 +36,12 @@ class org:
             return False
         else:
             return True
+
+# Obtain pulumi configuration file contents
+config = Config()
+
+# Obtain dev stack iam username from pulumi config file
+new_username = config.require('newUsername')
 
 # Create an aws object for the asterion-infra-aws organization
 asterion_infra_aws_org = org('asterion-infra-aws')
@@ -56,3 +65,34 @@ pulumi.export("asterion-infra-aws ou id", asterion_infra_aws.id)
 pulumi.export("Dev ou id", asterion_infra_aws_dev.id)
 pulumi.export("Test ou id", asterion_infra_aws_test.id)
 pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
+
+# Create an asterion group for the users
+admin_group = aws.iam.Group(
+    "admins", 
+    path="/users/"
+    )
+
+# Create asterion infra-aws iam users
+new_user = aws.iam.User(
+    'new-user', 
+    name=new_username,
+    force_destroy=True
+    )
+
+# Create a login profile for the users
+new_user_login = aws.iam.UserLoginProfile(
+    "asterion-user-login-profile-new_user",
+    user=new_user.name
+)
+
+# Export password for the user
+export("New user password", new_user_login.password)
+
+# Add the users to the admin group
+admin_team = aws.iam.GroupMembership(
+    "asterion-admin-team",
+    users=[
+        new_user.name
+    ],
+    group=admin_group.name
+    )

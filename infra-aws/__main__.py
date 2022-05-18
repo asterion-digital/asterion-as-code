@@ -7,6 +7,7 @@ import pulumi_aws as aws
 import pulumi_command as command
 from pulumi import Output
 
+
 # Initialize configuration
 config = pulumi.Config()
 public_key = config.require('publickey')

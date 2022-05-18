@@ -1,4 +1,7 @@
 """A Python Pulumi program"""
+# 
+# This code will setup kubernetes infrastructure on a Raspberry Pi with Ubuntu 21.10 installed.
+#
 
 import pulumi
 import pulumi_command as command

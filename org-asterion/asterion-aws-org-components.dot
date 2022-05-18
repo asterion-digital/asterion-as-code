@@ -1,0 +1,58 @@
+digraph G {
+    subgraph cluster_1 {
+        
+        subgraph cluster_2 {
+            style=filled;
+            color=grey;
+            label="asterion root org unit"
+            node [style=filled,color=white];
+            root
+
+                subgraph cluster_3 {
+                    style=filled;
+                    color=lightblue;
+                    node [style=filled,color=grey];
+                    label = "asterion org unit";
+                    
+                    subgraph cluster_4 {
+                        style=filled;
+                        color=lightyellow;
+                        node [style=filled,color=grey];
+                        label = "asterion team account";
+                        shawn,dj,james
+                        
+                        subgraph cluster_5 {
+                            style=filled;
+                            color=lightblue;
+                            node [style=filled,color=white];
+                            label = "asterion infra-aws org unit";
+                            
+                            subgraph cluster_6 {
+                                style=filled;
+                                color=lightyellow;
+                                node [style=filled,color=grey];
+                                label = "non-prod account";
+                                "assume non-prod admin role"
+                            }
+                            
+                            subgraph cluster_7 {
+                                style=filled;
+                                color=lightyellow;
+                                node [style=filled,color=grey];
+                                label = "prod account";
+                                "assume prod admin role"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+    shawn->"assume prod admin role"
+    dj->"assume prod admin role"
+    james->"assume prod admin role"
+    shawn->"assume non-prod admin role"
+    dj->"assume non-prod admin role"
+    james->"assume non-prod admin role"
+    }
+}

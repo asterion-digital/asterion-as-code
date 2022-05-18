@@ -1,0 +1,62 @@
+#+TITLE: Asterion infrastructure deployment
+#+AUTHOR: James Blair, Shawn Gerrard, Daljit Singh
+#+DATE: <2022-03-12 Sat>
+
+
+This repository captures the end to end workflow for deploying asterion digital aws organization and iam via [[https://www.pulumi.com/][pulumi]].
+
+
+* Setup environment
+
+To get started lets initialise our project, making sure we are in the right directory, have the python [[https://docs.python.org/3/library/venv.html][virtual environment]] activated, and have installed our python dependencies with [[https://pypi.org/project/pip/][pip]].
+
+#+NAME: Setup environment
+#+begin_src tmate
+# Start from the infra directory and initialise
+cd org-asterion && pulumi stack init dev
+
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install pip requirements
+pip install -r requirements.txt
+#+end_src
+
+
+* Create configuration
+
+Once our local environment is set up we can proceed with creating the required configuration entries in pulumi.
+
+#+NAME: Create required pulumi configuration
+#+begin_src tmate
+echo "<user name>" | pulumi config set newUsername
+#+end_src
+
+If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].
+
+
+* Create stack and retrieve kubeconfig
+
+Once we have our local pulumi configuration set we can bring up the organizational stack.
+
+Currently this stack includes construction of the asterion organization in aws, with iam users and login profiles, as well as aws accounts to manage resources in different development environments, and roles that administrative iam users can assume to access these accounts.
+
+#+NAME: Bring the stack up
+#+begin_src tmate
+pulumi up --yes
+#+end_src
+
+Asterion organization has now been deployed in aws! 🚀
+
+
+* Teardown stack
+
+Need to make it all go away 😅?  No problem, run the following to completely teardown this stack.
+
+#+NAME: Teardown down the pulumi stack
+#+begin_src tmate
+pulumi destroy --yes
+#+end_src
