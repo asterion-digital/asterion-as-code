@@ -11,12 +11,12 @@ class org:
     # Default constructor
     def __init__(self, name):
         self.name = name
-        self.org = aws.organizations.get_organization()
-        self.rootid = self.org.roots[0].id
+        self.org = object
+        self.rootid = object
 
     # Static method to create an aws organization
     def create_org(self):
-        
+
         # Create an aws organization for this current account
         self.org = aws.organizations.Organization(
             self.name,
@@ -26,16 +26,18 @@ class org:
                 "account.amazonaws.com",
             ],
             feature_set="ALL")
-        
+
         # Set the root id for the aws organization
-        self.rootid = org.roots[0].id
+        self.rootid = self.org.roots[0].id
 
     # Check if an aws organization exists for this account
     def org_exists(self):
-        if self.org.id == "" or self.org.id is none:
-            return False
-        else:
+        try:
+            self.org = aws.organizations.get_organisation()
+            self.rootid = self.org.roots[0].id
             return True
+        except:
+            return False
 
 # Obtain pulumi configuration file contents
 config = Config()
@@ -47,7 +49,7 @@ new_username = config.require('newUsername')
 asterion_infra_aws_org = org('asterion-infra-aws')
 
 # Check if the asterion aws organization object is set else set it
-if not asterion_infra_aws_org.org_exists:
+if not asterion_infra_aws_org.org_exists():
     asterion_infra_aws_org.create_org()
 pulumi.export("Asterion aws org id", asterion_infra_aws_org.org.id)
 pulumi.export("Asterion aws org root id", asterion_infra_aws_org.rootid)
@@ -68,13 +70,13 @@ pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
 
 # Create an asterion group for the users
 admin_group = aws.iam.Group(
-    "admins", 
+    "admins",
     path="/users/"
     )
 
 # Create asterion infra-aws iam users
 new_user = aws.iam.User(
-    'new-user', 
+    'new-user',
     name=new_username,
     force_destroy=True
     )
@@ -99,20 +101,20 @@ admin_team = aws.iam.GroupMembership(
 
 # Create asterion infra-aws environment accounts
 asterion_infra_aws_dev_acc = aws.organizations.Account(
-    "asterion-infra-aws-dev-team", 
-    email="asterion-dev-team@asterion.digital", 
-    name="Asterion Infra-AWS Dev Team", 
+    "asterion-infra-aws-dev-team",
+    email="asterion-dev-team@asterion.digital",
+    name="Asterion Infra-AWS Dev Team",
     parent_id=asterion_infra_aws_dev.id
 )
 asterion_infra_aws_test_acc = aws.organizations.Account(
-    "asterion-infra-aws-test-team", 
-    email="asterion-test-team@asterion.digital", 
-    name="Asterion Infra-AWS Test Team", 
+    "asterion-infra-aws-test-team",
+    email="asterion-test-team@asterion.digital",
+    name="Asterion Infra-AWS Test Team",
     parent_id=asterion_infra_aws_test.id
 )
 asterion_infra_aws_prod_acc = aws.organizations.Account(
-    "asterion-infra-aws-prod-team", 
-    email="asterion-prod-team@asterion.digital", 
-    name="Asterion Infra-AWS Prod Team", 
+    "asterion-infra-aws-prod-team",
+    email="asterion-prod-team@asterion.digital",
+    name="Asterion Infra-AWS Prod Team",
     parent_id=asterion_infra_aws_prod.id
 )
