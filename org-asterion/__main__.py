@@ -96,3 +96,23 @@ admin_team = aws.iam.GroupMembership(
     ],
     group=admin_group.name
     )
+
+# Create asterion infra-aws environment accounts
+asterion_infra_aws_dev_acc = aws.organizations.Account(
+    "asterion-infra-aws-dev-team", 
+    email="asterion-dev-team@asterion.digital", 
+    name="Asterion Infra-AWS Dev Team", 
+    parent_id=asterion_infra_aws_dev.id
+)
+asterion_infra_aws_test_acc = aws.organizations.Account(
+    "asterion-infra-aws-test-team", 
+    email="asterion-test-team@asterion.digital", 
+    name="Asterion Infra-AWS Test Team", 
+    parent_id=asterion_infra_aws_test.id
+)
+asterion_infra_aws_prod_acc = aws.organizations.Account(
+    "asterion-infra-aws-prod-team", 
+    email="asterion-prod-team@asterion.digital", 
+    name="Asterion Infra-AWS Prod Team", 
+    parent_id=asterion_infra_aws_prod.id
+)
