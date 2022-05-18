@@ -24,8 +24,7 @@ public_subnet = aws.ec2.Subnet(
 	cidr_block="10.0.101.0/24",
     map_public_ip_on_launch=True,
 	tags={ "Name": "asterion-infra-ec2" },
-	vpc_id=vpc.id__(self, name):
-        self.na
+	vpc_id=vpc.id
 )
 
 route_table = aws.ec2.RouteTable(
