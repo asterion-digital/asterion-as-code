@@ -87,6 +87,12 @@ new_user_login = aws.iam.UserLoginProfile(
     user=new_user.name
 )
 
+# Obtain an aws access key and apply to the new user
+new_user_access_key = aws.iam.AccessKey(
+    "asterion-infra-aws-user-access-key",
+    user=new_user.name
+)
+
 # Export password for the user
 export("New user password", new_user_login.password)
 
@@ -97,7 +103,7 @@ admin_team = aws.iam.GroupMembership(
         new_user.name
     ],
     group=admin_group.name
-    )
+)
 
 # Create asterion infra-aws environment accounts
 asterion_infra_aws_dev_acc = aws.organizations.Account(
@@ -118,3 +124,18 @@ asterion_infra_aws_prod_acc = aws.organizations.Account(
     name="Asterion Infra-AWS Prod Team",
     parent_id=asterion_infra_aws_prod.id
 )
+
+# Create a role
+admin_role = aws.iam.Role(
+    "asterion-infra-aws-admin-role",
+    assume_role_policy=json.dumps({
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Action": "sts:AssumeRole",
+            "Effect": "Allow",
+            "Sid": "",
+            "Principal": {
+                "Service": "ec2.amazonaws.com",
+            },
+        }],
+    }))
