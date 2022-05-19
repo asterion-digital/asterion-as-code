@@ -96,6 +96,10 @@ new_user_access_key = aws.iam.AccessKey(
 # Export password for the user
 export("New user password", new_user_login.password)
 
+# Export access key for the user
+export("Encrypted secret access key", new_user_access_key.encrypted_secret)
+export("Secret access key", new_user_access_key.secret)
+
 # Add the users to the admin group
 admin_team = aws.iam.GroupMembership(
     "asterion-admin-team",
