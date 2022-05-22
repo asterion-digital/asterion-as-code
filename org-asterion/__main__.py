@@ -3,6 +3,7 @@
 import pulumi
 import pulumi_aws as aws
 import json
+import datetime
 from pulumi import Config, ResourceOptions, export, Output
 
 # Blueprint for creating an aws asterion-org object
@@ -35,8 +36,13 @@ class org:
         try:
             self.org = aws.organizations.get_organisation()
             self.rootid = self.org.roots[0].id
-            return True
-        except:
+            if self.org.roots[0] is None:
+                return False
+            else:
+                return True
+        except BaseException as err:
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org' class")
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
             return False
 
 # Obtain pulumi configuration file contents
@@ -114,7 +120,7 @@ asterion_infra_aws_dev_acc = aws.organizations.Account(
     "asterion-infra-aws-dev-team",
     email="asterion-dev-team@asterion.digital",
     name="Asterion Infra-AWS Dev Team",
-    parent_id=asterion_infra_aws_dev.id
+    parent_id=asterion_infra_aws_dev.id,
 )
 asterion_infra_aws_test_acc = aws.organizations.Account(
     "asterion-infra-aws-test-team",
