@@ -41,7 +41,7 @@ class org:
             else:
                 return True
         except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org' class")
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
             return False
 
