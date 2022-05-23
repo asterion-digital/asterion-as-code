@@ -1,10 +1,19 @@
-"""An AWS Python Pulumi program"""
+"""An AWS Python Pulumi program to manage setup of the org-asterion-dev aws account"""
 
 import pulumi
-from pulumi_aws import s3
+import pulumi_aws as aws
 
-# Create an AWS resource (S3 Bucket)
-bucket = s3.Bucket('my-bucket')
+# Obtain the pulumi configuration
+config = pulumi.Config()
 
-# Export the name of the bucket
-pulumi.export('bucket_name', bucket.id)
+# Ensure we obtain the stacks from the proper environment (E.G 'dev', 'prod' etc)
+stack = pulumi.get_stack()
+
+# Obtain the pulumi account 'organization' field from the config
+org = config.require("currentOrg")
+
+# Obtain the `org-asterion` pulumi stack
+org_asterion_stack = pulumi.StackReference(f"{org}/org-asterion/{stack}")
+
+# Export the dev aws account id from the `org-asterion` stack
+pulumi.export("org-asterion-dev AWS Account ID", org_asterion_stack.get_output("Dev Account ID"))
