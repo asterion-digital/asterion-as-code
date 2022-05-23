@@ -1,6 +1,0 @@
-name: org-asterion-dev
-runtime:
-  name: python
-  options:
-    virtualenv: venv
-description: Manages the asterion infra-aws dev account

@@ -125,21 +125,21 @@ admin_team = aws.iam.GroupMembership(
 try:
     asterion_infra_aws_dev_acc = aws.organizations.Account(
         "asterion-infra-aws-dev-team",
-        email="devRRN8XsdN9wHjpYD4KxW9sLx7@asterion.digital",
+        email="asterion-dev-team@asterion.digital",
         name="Asterion Infra-AWS Dev Team",
         parent_id=asterion_infra_aws_dev.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
     )
     asterion_infra_aws_test_acc = aws.organizations.Account(
         "asterion-infra-aws-test-team",
-        email="testn6beRpTPbZ4j8JiX5CLX6xvH2@asterion.digital",
+        email="asterion-test-team@asterion.digital",
         name="Asterion Infra-AWS Test Team",
         parent_id=asterion_infra_aws_test.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
     )
     asterion_infra_aws_prod_acc = aws.organizations.Account(
         "asterion-infra-aws-prod-team",
-        email="prodmBJxpyCjBqcW8xhMwdfBkhtH@asterion.digital",
+        email="asterion-prod-team@asterion.digital",
         name="Asterion Infra-AWS Prod Team",
         parent_id=asterion_infra_aws_prod.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
