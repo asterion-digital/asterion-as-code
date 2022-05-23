@@ -3,11 +3,11 @@
 import pulumi
 import pulumi_aws as aws
 import json
+import datetime
 from pulumi import Config, ResourceOptions, export, Output
 
 # Blueprint for creating an aws asterion-org object
 class org:
-
     # Default constructor
     def __init__(self, name):
         self.name = name
@@ -16,27 +16,43 @@ class org:
 
     # Static method to create an aws organization
     def create_org(self):
-
-        # Create an aws organization for this current account
-        self.org = aws.organizations.Organization(
-            self.name,
-            aws_service_access_principals=[
-                "cloudtrail.amazonaws.com",
-                "config.amazonaws.com",
-                "account.amazonaws.com",
-            ],
-            feature_set="ALL")
-
-        # Set the root id for the aws organization
-        self.rootid = self.org.roots[0].id
-
-    # Check if an aws organization exists for this account
-    def org_exists(self):
+        
+        # Attempt to create an aws organization for this current account
         try:
-            self.org = aws.organizations.get_organisation()
+            self.org = aws.organizations.Organization(
+                self.name,
+                aws_service_access_principals=[
+                    "cloudtrail.amazonaws.com",
+                    "config.amazonaws.com",
+                    "account.amazonaws.com",
+                ],
+                feature_set="ALL",
+                opts=pulumi.ResourceOptions(retain_on_delete=True))
+
+            # Set the root id for the aws organization
             self.rootid = self.org.roots[0].id
-            return True
-        except:
+
+        except BaseException as err:
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'create_org()' method of the 'org' class")
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+
+    # Static method to check if an aws organization exists for this account
+    def org_exists(self):
+
+        # Attempt to obtain the organization
+        try:
+            self.org = aws.organizations.get_organization()
+            self.rootid = self.org.roots[0].id
+
+            # Check if the organization has any root accounts
+            if self.rootid is None or self.rootid == "":
+                return False
+            else:
+                return True
+
+        except BaseException as err:
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")
+            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
             return False
 
 # Obtain pulumi configuration file contents
@@ -63,10 +79,10 @@ asterion_infra_aws_test = aws.organizations.OrganizationalUnit("asterion-infra-a
 asterion_infra_aws_prod = aws.organizations.OrganizationalUnit("asterion-infra-aws-prod", parent_id=asterion_infra_aws.id)
 
 # Output asterion environment ou id's
-pulumi.export("asterion-infra-aws ou id", asterion_infra_aws.id)
-pulumi.export("Dev ou id", asterion_infra_aws_dev.id)
-pulumi.export("Test ou id", asterion_infra_aws_test.id)
-pulumi.export("Prod ou id", asterion_infra_aws_prod.id)
+pulumi.export("asterion-infra-aws OU ID", asterion_infra_aws.id)
+pulumi.export("Dev OU ID", asterion_infra_aws_dev.id)
+pulumi.export("Test OU ID", asterion_infra_aws_test.id)
+pulumi.export("Prod OU ID", asterion_infra_aws_prod.id)
 
 # Create an asterion group for the users
 admin_group = aws.iam.Group(
@@ -97,24 +113,44 @@ admin_team = aws.iam.GroupMembership(
         new_user.name
     ],
     group=admin_group.name
+)
+
+# TODO: If wanting to make the stack tear down process 
+# repeatable/automated, you will need to create a 
+# conditional statement that checks if the accounts 
+# exist in a "suspended account" OU first and obtain 
+# those before creating new accounts.
+
+# Try to create asterion infra-aws environment accounts
+try:
+    asterion_infra_aws_dev_acc = aws.organizations.Account(
+        "asterion-infra-aws-dev-team",
+        email="asterion-dev-team@asterion.digital",
+        name="Asterion Infra-AWS Dev Team",
+        parent_id=asterion_infra_aws_dev.id,
+        opts=pulumi.ResourceOptions(retain_on_delete=True)
+    )
+    asterion_infra_aws_test_acc = aws.organizations.Account(
+        "asterion-infra-aws-test-team",
+        email="asterion-test-team@asterion.digital",
+        name="Asterion Infra-AWS Test Team",
+        parent_id=asterion_infra_aws_test.id,
+        opts=pulumi.ResourceOptions(retain_on_delete=True)
+    )
+    asterion_infra_aws_prod_acc = aws.organizations.Account(
+        "asterion-infra-aws-prod-team",
+        email="asterion-prod-team@asterion.digital",
+        name="Asterion Infra-AWS Prod Team",
+        parent_id=asterion_infra_aws_prod.id,
+        opts=pulumi.ResourceOptions(retain_on_delete=True)
     )
 
-# Create asterion infra-aws environment accounts
-asterion_infra_aws_dev_acc = aws.organizations.Account(
-    "asterion-infra-aws-dev-team",
-    email="asterion-dev-team@asterion.digital",
-    name="Asterion Infra-AWS Dev Team",
-    parent_id=asterion_infra_aws_dev.id
-)
-asterion_infra_aws_test_acc = aws.organizations.Account(
-    "asterion-infra-aws-test-team",
-    email="asterion-test-team@asterion.digital",
-    name="Asterion Infra-AWS Test Team",
-    parent_id=asterion_infra_aws_test.id
-)
-asterion_infra_aws_prod_acc = aws.organizations.Account(
-    "asterion-infra-aws-prod-team",
-    email="asterion-prod-team@asterion.digital",
-    name="Asterion Infra-AWS Prod Team",
-    parent_id=asterion_infra_aws_prod.id
-)
+# If there was an error E.G the accounts already exist then log the error
+except BaseException as err:
+    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in 'main()'")
+    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+
+# Output asterion environment account id's
+pulumi.export("Dev Account ID", asterion_infra_aws_dev_acc.id)
+pulumi.export("Test Account ID", asterion_infra_aws_test_acc.id)
+pulumi.export("Production Account ID", asterion_infra_aws_prod_acc.id)

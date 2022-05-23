@@ -58,7 +58,7 @@ sg = aws.ec2.SecurityGroup(
         { 'protocol': 'tcp', 'from_port': 6443, 'to_port': 6443, 'cidr_blocks': [extip.text.strip()+'/32'] },
         { 'protocol': 'tcp', 'from_port': 6443, 'to_port': 6443, 'cidr_blocks': [public_subnet.cidr_block] },
     ],
-    vpc_id=vpc.id,
+    vpc_id=vpc.id
 )
 
 # Retrive the amazon ami for ubuntu
