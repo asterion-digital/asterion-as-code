@@ -16,5 +16,5 @@ org = config.require("currentOrg")
 org_asterion_stack = pulumi.StackReference(f"{org}/org-asterion/{stack}")
 
 # Export the dev aws account id from the `org-asterion` stack
-pulumi.export("org-asterion AWS Account ID", org_asterion_stack.get_output("Dev Account ID"))
+pulumi.export("org-asterion AWS Account ID", org_asterion_stack.get_output("Asterion aws org account id"))
 pulumi.export("org-asterion-dev AWS Account ID", org_asterion_stack.get_output("Dev Account ID"))

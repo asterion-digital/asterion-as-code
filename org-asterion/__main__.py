@@ -69,6 +69,7 @@ if not asterion_infra_aws_org.org_exists():
     asterion_infra_aws_org.create_org()
 pulumi.export("Asterion aws org id", asterion_infra_aws_org.org.id)
 pulumi.export("Asterion aws org root id", asterion_infra_aws_org.rootid)
+pulumi.export("Asterion aws org account id", asterion_infra_aws_org.org.master_account_id)
 
 # Create asterion infra-aws organizational unit
 asterion_infra_aws = aws.organizations.OrganizationalUnit("asterion-infra-aws", parent_id=asterion_infra_aws_org.rootid)
