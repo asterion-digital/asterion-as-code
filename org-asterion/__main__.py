@@ -155,3 +155,26 @@ except BaseException as err:
 pulumi.export("Dev Account ID", asterion_infra_aws_dev_acc.id)
 pulumi.export("Test Account ID", asterion_infra_aws_test_acc.id)
 pulumi.export("Production Account ID", asterion_infra_aws_prod_acc.id)
+
+# Create a policy document for the assumerole policies
+assumerole_policy_document = aws.iam.get_policy_document(
+    statements=[
+        aws.iam.GetPolicyDocumentStatementArgs(
+            actions=[
+                "sts:AssumeRole"
+            ],
+            effect="Allow",
+            resources=[
+                Output.concat("arn:aws:iam::",asterion_infra_aws_dev_acc.id,":role/Administrator"),
+                Output.concat("arn:aws:iam::",asterion_infra_aws_test_acc.id,":role/Administrator"),
+                Output.concat("arn:aws:iam::",asterion_infra_aws_prod_acc.id,":role/Administrator")
+            ]
+        )
+    ]
+)
+
+# Attach the assumerole policy document to the admins group policy
+admin_group_assumerole_policy = aws.iam.GroupPolicy("asterion-group-admins-policy",
+    group=admin_group.name,
+    policy=assumerole_policy_document.json
+)
