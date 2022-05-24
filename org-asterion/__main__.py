@@ -58,6 +58,9 @@ class org:
 # Obtain pulumi configuration file contents
 config = Config()
 
+# Obtain the aws pulumi configuration file contents
+aws_config = Config("aws")
+
 # Obtain dev stack iam username from pulumi config file
 new_username = config.require('newUsername')
 
@@ -111,7 +114,8 @@ export("New user password", new_user_login.password)
 admin_team = aws.iam.GroupMembership(
     "asterion-admin-team",
     users=[
-        new_user.name
+        new_user.name,
+        "administrator"
     ],
     group=admin_group.name
 )
@@ -177,4 +181,15 @@ assumerole_policy_document = aws.iam.get_policy_document(
 admin_group_assumerole_policy = aws.iam.GroupPolicy("asterion-group-admins-policy",
     group=admin_group.name,
     policy=assumerole_policy_document.json
+)
+
+# Create a provider that will assume the default `OrganizationAccountAccessRole` role in the asterion dev account
+provider = aws.Provider(
+    "asterion-dev-account-provider",
+    assume_role=aws.ProviderAssumeRoleArgs(
+        role_arn=Output.concat("arn:aws:iam::",asterion_infra_aws_dev_acc.id,":role/OrganizationAccountAccessRole"),
+        session_name="PulumiSession",
+        external_id="PulumiApplication"
+    ),
+    region=aws_config.require('region')
 )
