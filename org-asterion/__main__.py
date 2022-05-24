@@ -193,3 +193,55 @@ provider = aws.Provider(
     ),
     region=aws_config.require('region')
 )
+
+#########################################################################################
+# Apply configurations to asterion-dev aws account below
+#########################################################################################
+
+# Define an inline policy document in the asterion dev account for resource permissions
+asterion_dev_policy_document = aws.iam.get_policy_document(
+    statements=[
+        aws.iam.GetPolicyDocumentStatementArgs(
+            actions=[
+                "ec2:*"
+            ],
+            effect="Allow",
+            resources=[
+                Output.concat("arn:aws:ec2::",asterion_infra_aws_dev_acc.id,":*")
+            ]
+        )
+    ],
+    opts=pulumi.InvokeOptions(provider=provider)
+)
+
+# Define a policy document that allows the administrator role to be assumed
+assume_role_policy_document = aws.iam.get_policy_document(
+    statements=[
+        aws.iam.GetPolicyDocumentStatementArgs(
+            actions=[
+                "sts:AssumeRole"
+            ],
+            effect="Allow",
+            principals=[
+                aws.iam.GetPolicyDocumentStatementPrincipalArgs(
+                    identifiers=[Output.concat("arn:aws:iam::",asterion_infra_aws_org.org.master_account_id,":user/administrator")],
+                    type="AWS"
+                )
+            ]
+        )
+    ],
+    opts=pulumi.InvokeOptions(provider=provider)
+)
+
+# Create a new role in the asterion dev account 
+admin_dev_role = aws.iam.Role(
+    "asterion-dev-admin-role",
+    assume_role_policy=assume_role_policy_document.json,
+    inline_policies=[
+        aws.iam.RoleInlinePolicyArgs(
+            name="asterion-dev-resource-policy",
+            policy=asterion_dev_policy_document.json
+        )
+    ],
+    opts=pulumi.ResourceOptions(provider=provider)
+)
