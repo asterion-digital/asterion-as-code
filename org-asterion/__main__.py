@@ -64,22 +64,38 @@ class org:
 config = Config()
 
 # Create an aws object for the asterion-infra-aws organization
-asterion_infra_aws_org = org('asterion-infra-aws')
+asterion_org = org('asterion-infra-aws')
 
 # Check if the asterion aws organization object is set else set it
-if not asterion_infra_aws_org.org_exists():
-    asterion_infra_aws_org.create_org()
-pulumi.export("asterion org id", asterion_infra_aws_org.org.id)
-pulumi.export("asterion org root id", asterion_infra_aws_org.rootid)
-pulumi.export("asterion org account id", asterion_infra_aws_org.org.master_account_id)
+if not asterion_org.org_exists():
+    asterion_org.create_org()
+pulumi.export("asterion org id", asterion_org.org.id)
+pulumi.export("asterion org root id", asterion_org.rootid)
+pulumi.export("asterion org account id", asterion_org.org.master_account_id)
 
 # Create asterion infra-aws organizational unit
-asterion_infra_aws = aws.organizations.OrganizationalUnit("asterion-infra-aws", parent_id=asterion_infra_aws_org.rootid)
+asterion_infra_aws = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-ou", 
+    parent_id=asterion_org.rootid
+    name="asterion-infra-aws-ou"
+)
 
 # Create asterion infra-aws environment ou's
-asterion_infra_aws_dev = aws.organizations.OrganizationalUnit("asterion-infra-aws-dev", parent_id=asterion_infra_aws.id)
-asterion_infra_aws_test = aws.organizations.OrganizationalUnit("asterion-infra-aws-test", parent_id=asterion_infra_aws.id)
-asterion_infra_aws_prod = aws.organizations.OrganizationalUnit("asterion-infra-aws-prod", parent_id=asterion_infra_aws.id)
+asterion_infra_aws_dev = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-dev-ou",
+    parent_id=asterion_infra_aws.id,
+    name="asterion-infra-aws-dev-ou"
+)
+asterion_infra_aws_test = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-test-ou", 
+    parent_id=asterion_infra_aws.id,
+    name="asterion-infra-aws-test-ou"
+)
+asterion_infra_aws_prod = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-prod", 
+    parent_id=asterion_infra_aws.id,
+    name="asterion-infra-aws-prod-ou"
+)
 
 # Output asterion environment ou id's
 pulumi.export("asterion dev ou id", asterion_infra_aws.id)

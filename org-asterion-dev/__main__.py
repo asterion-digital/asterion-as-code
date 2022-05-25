@@ -26,7 +26,7 @@ pulumi.export("org-asterion aws account id", root_account_id)
 pulumi.export("org-asterion-dev aws account id", dev_account_id)
 
 # Create a provider that will assume the default `OrganizationAccountAccessRole` role in the asterion-dev account
-provider = aws.Provider(
+dev_provider = aws.Provider(
     "asterion-dev-account-provider",
     assume_role=aws.ProviderAssumeRoleArgs(
         role_arn=Output.concat("arn:aws:iam::",dev_account_id,":role/OrganizationAccountAccessRole"),
@@ -41,7 +41,7 @@ alias = aws.iam.AccountAlias(
     "asterion-dev-account-alias",
     account_alias="asteriondev",
     opts=pulumi.ResourceOptions(
-        provider=provider
+        provider=dev_provider
     )
 )
 
@@ -59,7 +59,7 @@ asterion_dev_policy_document = aws.iam.get_policy_document(
         )
     ],
     opts=pulumi.InvokeOptions(
-        provider=provider
+        provider=dev_provider
     )
 )
 
@@ -80,7 +80,7 @@ assume_role_policy_document = aws.iam.get_policy_document(
         )
     ],
     opts=pulumi.InvokeOptions(
-        provider=provider
+        provider=dev_provider
     )
 )
 
@@ -94,5 +94,7 @@ admin_dev_role = aws.iam.Role(
             policy=asterion_dev_policy_document.json
         )
     ],
-    opts=pulumi.ResourceOptions(provider=provider)
+    opts=pulumi.ResourceOptions(
+        provider=dev_provider
+    )
 )
