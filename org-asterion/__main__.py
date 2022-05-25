@@ -76,7 +76,7 @@ pulumi.export("asterion org account id", asterion_org.org.master_account_id)
 # Create asterion infra-aws organizational unit
 asterion_infra_aws = aws.organizations.OrganizationalUnit(
     "asterion-infra-aws-ou", 
-    parent_id=asterion_org.rootid
+    parent_id=asterion_org.rootid,
     name="asterion-infra-aws-ou"
 )
 
