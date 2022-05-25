@@ -30,9 +30,11 @@ pip install -r requirements.txt
 
 Once our local environment is set up we can proceed with creating the required configuration entries in pulumi.
 
+The `newUsernames` config value can be a list seperated by the following characters: (;,.-%)
+
 #+NAME: Create required pulumi configuration
 #+begin_src tmate
-echo "<user name>" | pulumi config set newUsername
+echo "<username1>,<username2>,<username3>" | pulumi config set newUsernames
 #+end_src
 
 If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].

@@ -73,7 +73,7 @@ assume_role_policy_document = aws.iam.get_policy_document(
             effect="Allow",
             principals=[
                 aws.iam.GetPolicyDocumentStatementPrincipalArgs(
-                    identifiers=[Output.concat("arn:aws:iam::",root_account_id,":group/admins")],
+                    identifiers=[Output.concat("arn:aws:iam::",root_account_id,":group/asterion-admins")],
                     type="AWS"
                 )
             ]
