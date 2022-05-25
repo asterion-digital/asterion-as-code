@@ -13,6 +13,7 @@ stack = pulumi.get_stack()
 
 # Obtain the pulumi account 'organization' field from the config
 org = config.require("currentOrg")
+dev_account_alias = config.require("accountAlias")
 
 # Obtain the `org-asterion` pulumi stack
 org_asterion_stack = pulumi.StackReference(f"{org}/org-asterion/{stack}")
@@ -39,7 +40,7 @@ dev_provider = aws.Provider(
 # Create an alias for the asterion-dev account
 alias = aws.iam.AccountAlias(
     "asterion-dev-account-alias",
-    account_alias="asteriondev",
+    account_alias=dev_account_alias,
     opts=pulumi.ResourceOptions(
         provider=dev_provider
     )
