@@ -36,7 +36,8 @@ You can obtain the organization name of your pulumi account from the [[https://a
 
 #+NAME: Create required pulumi configuration
 #+begin_src tmate
-echo "<org name>" | pulumi config set org
+echo "<org name>" | pulumi config set currentOrg
+echo "asteriondev" | pulumi config set accountAlias
 #+end_src
 
 If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].
