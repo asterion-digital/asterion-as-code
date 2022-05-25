@@ -96,16 +96,3 @@ admin_dev_role = aws.iam.Role(
     ],
     opts=pulumi.ResourceOptions(provider=provider)
 )
-
-# Create a new role in the asterion dev account 
-admin_dev_role = aws.iam.Role(
-    "asterion-dev-admin-role",
-    assume_role_policy=assume_role_policy_document.json,
-    inline_policies=[
-        aws.iam.RoleInlinePolicyArgs(
-            name="asterion-dev-resource-policy",
-            policy=asterion_dev_policy_document.json
-        )
-    ],
-    opts=pulumi.ResourceOptions(provider=provider)
-)
