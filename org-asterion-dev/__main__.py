@@ -22,25 +22,7 @@ org_asterion_stack = pulumi.StackReference(f"{org}/org-asterion/{stack}")
 # Obtain `org-asterion` output objects
 root_account_id = org_asterion_stack.get_output("asterion org account id")
 dev_account_id = org_asterion_stack.get_output("asterion dev account id")
-new_user_list = org_asterion_stack.get_output("username string list")
-
-# Split the new user string list into an array list
-users=re.split('[;,.\-\%]',str(new_user_list))
-
-# Define an array to hold our username arn outputs
-user_arns=[]
-
-# Create the user arns to use in our iam policies
-for user in users:
-
-    # Construct the arn
-    arn = Output.concat("arn:aws:iam::",root_account_id,":user/",user)
-
-    # Export the user arn
-    pulumi.export("new user arn for '" + user + "'", arn)
-
-    # Add the user to the list of administrators
-    user_arns.append(arn.apply(lambda v:v))
+new_user_arns = org_asterion_stack.get_output("user arns")
 
 # Export the dev aws account id from the `org-asterion` stack
 pulumi.export("org-asterion aws account id", root_account_id)
@@ -94,7 +76,7 @@ assume_role_policy_document = aws.iam.get_policy_document(
             effect="Allow",
             principals=[
                 aws.iam.GetPolicyDocumentStatementPrincipalArgs(
-                    identifiers=user_arns,
+                    identifiers=new_user_arns,
                     type="AWS"
                 )
             ]

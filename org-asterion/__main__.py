@@ -130,8 +130,11 @@ export("username string list", new_usernames)
 # Split the usernames string into a list
 usernames = re.split('[;,.\-\%]',str(new_usernames))
 
-# Define a list of administrator users for later
+# Define a list of administrator usernames for later
 administrators = []
+
+# Define a list of administrator arns for later
+arns = []
 
 # Create the asterion users
 for name in usernames:
@@ -162,6 +165,12 @@ for name in usernames:
 
     # Add the user to the list of administrators
     administrators.append(new_user.name.apply(lambda v:v))
+
+    # Add the user arn to the list of arns
+    arns.append(new_user.arn.apply(lambda v:v))
+
+# Export the user arns
+pulumi.export("user arns", arns)
 
 # Add the users to the admin group
 admin_team = aws.iam.GroupMembership(
