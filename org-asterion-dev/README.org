@@ -5,6 +5,8 @@
 
 This repository captures the end to end workflow for deploying asterion digital aws organization and iam via [[https://www.pulumi.com/][pulumi]].
 
+Please note that this stack requires the [[https://github.com/asterion-digital/asterion-as-code/tree/master/org-asterion][org-asterion]] pulumi stack brought `up`.
+
 
 * Setup environment
 
@@ -13,7 +15,7 @@ To get started lets initialise our project, making sure we are in the right dire
 #+NAME: Setup environment
 #+begin_src tmate
 # Start from the infra directory and initialise
-cd org-asterion && pulumi stack init dev
+cd org-asterion-dev && pulumi stack init dev
 
 # Create virtual environment
 python3 -m venv venv
@@ -30,11 +32,12 @@ pip install -r requirements.txt
 
 Once our local environment is set up we can proceed with creating the required configuration entries in pulumi.
 
-The `newUsernames` config value can be a list seperated by the following characters: (;,.-%)
+You can obtain the organization name of your pulumi account from the [[https://app.pulumi.com/signin][pulumi console]].
 
 #+NAME: Create required pulumi configuration
 #+begin_src tmate
-echo "<username1>,<username2>,<username3>" | pulumi config set newUsernames
+echo "<org name>" | pulumi config set currentOrg
+echo "asteriondev" | pulumi config set accountAlias
 #+end_src
 
 If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].
@@ -62,3 +65,6 @@ Need to make it all go away 😅?  No problem, run the following to completely t
 #+begin_src tmate
 pulumi destroy --yes
 #+end_src
+
+
+From here, you can sign-in as one of the users, using the appropriate password in the pulumi output, into the aws console and create access keys to be able to interact with aws programatically or through the CLI.
