@@ -90,6 +90,7 @@ assume_role_policy_document = aws.iam.get_policy_document(
 # Create a new role in the asterion-dev account 
 admin_dev_role = aws.iam.Role(
     "asterion-dev-admin-role",
+    name="administrator",
     assume_role_policy=assume_role_policy_document.json,
     inline_policies=[
         aws.iam.RoleInlinePolicyArgs(

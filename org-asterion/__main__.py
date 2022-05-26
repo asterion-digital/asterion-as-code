@@ -248,9 +248,9 @@ assumerole_policy_document = aws.iam.get_policy_document(
             ],
             effect="Allow",
             resources=[
-                Output.concat("arn:aws:iam::",asterion_infra_aws_dev_acc.id,":role/Administrator"),
-                Output.concat("arn:aws:iam::",asterion_infra_aws_test_acc.id,":role/Administrator"),
-                Output.concat("arn:aws:iam::",asterion_infra_aws_prod_acc.id,":role/Administrator")
+                Output.concat("arn:aws:iam::",asterion_infra_aws_dev_acc.id,":role/administrator"),
+                Output.concat("arn:aws:iam::",asterion_infra_aws_test_acc.id,":role/administrator"),
+                Output.concat("arn:aws:iam::",asterion_infra_aws_prod_acc.id,":role/administrator")
             ]
         )
     ]
