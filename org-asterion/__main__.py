@@ -124,6 +124,9 @@ except BaseException as err:
 # Obtain dev stack iam usernames from pulumi configuration
 new_usernames = config.require('newUsernames')
 
+# Export the list of username strings
+export("username string list", new_usernames)
+
 # Split the usernames string into a list
 usernames = re.split('[;,.\-\%]',str(new_usernames))
 
