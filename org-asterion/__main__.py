@@ -183,7 +183,7 @@ admin_team = aws.iam.GroupMembership(
 try:
     asterion_infra_aws_dev_acc = aws.organizations.Account(
         "asterion-dev-account",
-        email="asterion-dev-team@asterion.digital",
+        email="asterion-infra-aws-dev@asterion.digital",
         name="Asterion Infra-AWS Dev Team",
         parent_id=asterion_infra_aws_dev.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
@@ -195,7 +195,7 @@ except BaseException as err:
 try:
     asterion_infra_aws_test_acc = aws.organizations.Account(
         "asterion-test-account",
-        email="asterion-test-team@asterion.digital",
+        email="asterion-infra-aws-test@asterion.digital",
         name="Asterion Infra-AWS Test Team",
         parent_id=asterion_infra_aws_test.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
@@ -207,7 +207,7 @@ except BaseException as err:
 try:
     asterion_infra_aws_prod_acc = aws.organizations.Account(
         "asterion-prod-account",
-        email="asterion-prod-team@asterion.digital",
+        email="asterion-infra-aws-prod@asterion.digital",
         name="Asterion Infra-AWS Prod Team",
         parent_id=asterion_infra_aws_prod.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
