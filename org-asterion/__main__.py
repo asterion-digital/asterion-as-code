@@ -33,10 +33,9 @@ class org:
                 ],
                 feature_set="ALL",
                 opts=pulumi.ResourceOptions(retain_on_delete=True))
-
+            
             # Set the root id for the aws organization
             self.rootid = self.org.roots[0].id
-
         except BaseException as err:
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'create_org()' method of the 'org' class")
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
@@ -44,9 +43,9 @@ class org:
     # Static method to check if an aws organization exists for this account
     def org_exists(self):
 
-        # Attempt to obtain the organization
+        # Attempt to create the organization
         try:
-            self.org = aws.organizations.get_organization()
+            self.create_org()
             self.rootid = self.org.roots[0].id
 
             # Check if the organization has any root accounts
@@ -58,7 +57,9 @@ class org:
         except BaseException as err:
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-            return False
+            self.org = aws.organizations.get_organization()
+            self.rootid = self.org.roots[0].id
+            return True
 
 # Obtain pulumi configuration file contents
 config = Config()
