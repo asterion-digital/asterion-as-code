@@ -1,16 +1,10 @@
 config:
   aws:defaultTags:
     tags:
-      aws-environment: dev
+      environment: dev
   aws:region: ap-southeast-2
-  org-asterion:accountAlias: asteriondev
   org-asterion:currentOrgName: shawng
-  org-asterion:accountIds:
-    root: 814941672613
-    dev: 822258672282
-    test: 022525405108
-    prod: 016114654101
-  org-asterion:currentEnvironment: dev
+  org-asterion:environment: dev
   org-asterion:iamUsersToAdd: 
     users:
     - shawn

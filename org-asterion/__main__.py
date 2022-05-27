@@ -61,14 +61,6 @@ class org:
             self.rootid = self.org.roots[0].id
             return True
 
-# Set project-wide pulumi variables
-project_config={
-    "root": "814941672613",
-    "dev": "822258672282",
-    "test": "022525405108",
-    "prod": "016114654101"
-}
-
 # Obtain pulumi configuration file contents
 config = Config()
 
@@ -107,7 +99,7 @@ asterion_infra_aws_prod = aws.organizations.OrganizationalUnit(
 )
 
 # Output asterion environment ou id's
-pulumi.export("asterion dev ou id", asterion_infra_aws.id)
+pulumi.export("asterion ou id", asterion_infra_aws.id)
 pulumi.export("asterion dev ou id", asterion_infra_aws_dev.id)
 pulumi.export("asterion test ou id", asterion_infra_aws_test.id)
 pulumi.export("asterion prod ou id", asterion_infra_aws_prod.id)
@@ -130,13 +122,7 @@ except BaseException as err:
     pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
 # Obtain dev stack iam usernames from pulumi configuration
-new_usernames = config.require('newUsernames')
-
-# Export the list of username strings
-export("username string list", new_usernames)
-
-# Split the usernames string into a list
-usernames = re.split('[;,.\-\%]',str(new_usernames))
+usernames = config.require_object('iamUsersToAdd')
 
 # Define a list of administrator usernames for later
 administrators = []
@@ -145,7 +131,7 @@ administrators = []
 arns = []
 
 # Create the asterion users
-for name in usernames:
+for name in usernames["users"]:
 
     # Try to create an iam user account
     try:
@@ -168,7 +154,7 @@ for name in usernames:
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
             pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
-    # Export password for the user
+    # Export user information for the user
     export("new user password for '" + name + "'", new_user_login.password)
 
     # Add the user to the list of administrators
@@ -178,7 +164,7 @@ for name in usernames:
     arns.append(new_user.arn.apply(lambda v:v))
 
 # Export the user arns
-pulumi.export("user arns", arns)
+pulumi.export("new user arns", arns)
 
 # Add the users to the admin group
 admin_team = aws.iam.GroupMembership(
