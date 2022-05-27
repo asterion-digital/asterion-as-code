@@ -13,7 +13,7 @@ config = Config()
 stack = pulumi.get_stack()
 
 # Obtain the pulumi account 'organization' field from the config
-org = config.require("currentOrg")
+org = config.require("currentOrgName")
 dev_account_alias = config.require("accountAlias")
 
 # Obtain the `org-asterion` pulumi stack
