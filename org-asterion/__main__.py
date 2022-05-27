@@ -61,6 +61,14 @@ class org:
             self.rootid = self.org.roots[0].id
             return True
 
+# Set project-wide pulumi variables
+project_config={
+    "root": "814941672613",
+    "dev": "822258672282",
+    "test": "022525405108",
+    "prod": "016114654101"
+}
+
 # Obtain pulumi configuration file contents
 config = Config()
 
