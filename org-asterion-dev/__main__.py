@@ -3,7 +3,6 @@
 import pulumi
 import pulumi_aws as aws
 import json
-import re
 from pulumi import Config, Output
 
 # Obtain the pulumi configuration
