@@ -1,124 +1,31 @@
 """A pulumi program to deploy asterion-digital oganization to aws."""
-
 import datetime
-import json
 import pulumi
 import pulumi_aws as aws
-import re
 from pulumi import Config, ResourceOptions, export, Output
-import org as awsorg
 
 # Obtain pulumi configuration file contents
 config = Config()
 
-# Create an aws object for the asterion-infra-aws organization
-asterion_org = awsorg.org('asterion-infra-aws')
+# Import the org classes from the org module
+import org as awsorg
 
-# Check if the asterion aws organization object is set else set it
-if not asterion_org.org_exists():
-    asterion_org.create_org()
-pulumi.export("asterion org id", asterion_org.org.id)
-pulumi.export("asterion org root id", asterion_org.rootid)
-pulumi.export("asterion org account id", asterion_org.org.master_account_id)
-
-# Create asterion infra-aws organizational unit
-asterion_infra_aws = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-ou", 
-    parent_id=asterion_org.rootid,
-    name="asterion-infra-aws-ou"
-)
-
-# Create asterion infra-aws environment ou's
-asterion_infra_aws_dev = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-dev-ou",
-    parent_id=asterion_infra_aws.id,
-    name="asterion-infra-aws-dev-ou"
-)
-asterion_infra_aws_test = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-test-ou", 
-    parent_id=asterion_infra_aws.id,
-    name="asterion-infra-aws-test-ou"
-)
-asterion_infra_aws_prod = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-prod", 
-    parent_id=asterion_infra_aws.id,
-    name="asterion-infra-aws-prod-ou"
-)
+# Export the org/root/account ids
+pulumi.export("asterion org id", awsorg.asterion_org.org.id)
+pulumi.export("asterion org root id", awsorg.asterion_org.rootid)
+pulumi.export("asterion org account id", awsorg.asterion_org.org.master_account_id)
 
 # Output asterion environment ou id's
-pulumi.export("asterion ou id", asterion_infra_aws.id)
-pulumi.export("asterion dev ou id", asterion_infra_aws_dev.id)
-pulumi.export("asterion test ou id", asterion_infra_aws_test.id)
-pulumi.export("asterion prod ou id", asterion_infra_aws_prod.id)
+pulumi.export("asterion ou id", awsorg.asterion_infra_aws.id)
+pulumi.export("asterion dev ou id", awsorg.asterion_infra_aws_dev.id)
+pulumi.export("asterion test ou id", awsorg.asterion_infra_aws_test.id)
+pulumi.export("asterion prod ou id", awsorg.asterion_infra_aws_prod.id)
 
-#####################################################################################
+# Register the iam users with aws
+import users as users
 
-#####################################################################################
-# Create asterion aws iam users
-#####################################################################################
-
-# Try to create an asterion iam group for administrative users
-try:
-    admin_group = aws.iam.Group(
-        "asterion-admins",
-        name="asterion-admins",
-        path="/users/"
-    )
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-admins iam group")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-# Obtain dev stack iam usernames from pulumi configuration
-usernames = config.require_object('iamUsersToAdd')
-
-# Define a list of administrator usernames for later
-administrators = []
-
-# Define a list of administrator arns for later
-arns = []
-
-# Create the asterion users
-for name in usernames["users"]:
-
-    # Try to create an iam user account
-    try:
-        new_user = aws.iam.User(
-            "asterion-user-" + name,
-            name=name,
-            force_destroy=True
-        )
-    except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a new user: '" + str(name) + "'")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-    # Try to create a login for the user
-    try:
-        new_user_login = aws.iam.UserLoginProfile(
-            "asterion-user-login-" + name,
-            user=name
-        )
-    except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-    # Export user information for the user
-    export("new user password for '" + name + "'", new_user_login.password)
-
-    # Add the user to the list of administrators
-    administrators.append(new_user.name.apply(lambda v:v))
-
-    # Add the user arn to the list of arns
-    arns.append(new_user.arn.apply(lambda v:v))
-
-# Export the user arns
-pulumi.export("new user arns", arns)
-
-# Add the users to the admin group
-admin_team = aws.iam.GroupMembership(
-    "asterion-admins-team-members",
-    users=administrators,
-    group=admin_group.name
-)
+# Export the iam user arns
+pulumi.export("new user arns", users.arns)
 
 #####################################################################################
 
@@ -138,7 +45,7 @@ try:
         "asterion-dev-account",
         email="asterion-infra-aws-dev@asterion.digital",
         name="Asterion Infra-AWS Dev Team",
-        parent_id=asterion_infra_aws_dev.id,
+        parent_id=awsorg.asterion_infra_aws_dev.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
     )
 except BaseException as err:
@@ -150,7 +57,7 @@ try:
         "asterion-test-account",
         email="asterion-infra-aws-test@asterion.digital",
         name="Asterion Infra-AWS Test Team",
-        parent_id=asterion_infra_aws_test.id,
+        parent_id=awsorg.asterion_infra_aws_test.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
     )
 except BaseException as err:
@@ -162,7 +69,7 @@ try:
         "asterion-prod-account",
         email="asterion-infra-aws-prod@asterion.digital",
         name="Asterion Infra-AWS Prod Team",
-        parent_id=asterion_infra_aws_prod.id,
+        parent_id=awsorg.asterion_infra_aws_prod.id,
         opts=pulumi.ResourceOptions(retain_on_delete=True)
     )
 except BaseException as err:
@@ -199,7 +106,7 @@ assumerole_policy_document = aws.iam.get_policy_document(
 
 # Attach the assumerole policy document to the admins group policy
 admin_group_assumerole_policy = aws.iam.GroupPolicy("asterion-group-admins-policy",
-    group=admin_group.name,
+    group=users.admin_group.name,
     policy=assumerole_policy_document.json
 )
 

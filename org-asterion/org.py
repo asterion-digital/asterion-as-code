@@ -56,3 +56,34 @@ class org:
             self.org = aws.organizations.get_organization()
             self.rootid = self.org.roots[0].id
             return True
+
+# Create an aws object for the asterion-infra-aws organization
+asterion_org = org('asterion-infra-aws')
+
+# Check if the asterion aws organization object is set else set it
+if not asterion_org.org_exists():
+    asterion_org.create_org()
+
+# Create asterion infra-aws organizational unit
+asterion_infra_aws = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-ou", 
+    parent_id=asterion_org.rootid,
+    name="asterion-infra-aws-ou"
+)
+
+# Create asterion infra-aws environment ou's
+asterion_infra_aws_dev = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-dev-ou",
+    parent_id=asterion_infra_aws.id,
+    name="asterion-infra-aws-dev-ou"
+)
+asterion_infra_aws_test = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-test-ou", 
+    parent_id=asterion_infra_aws.id,
+    name="asterion-infra-aws-test-ou"
+)
+asterion_infra_aws_prod = aws.organizations.OrganizationalUnit(
+    "asterion-infra-aws-prod", 
+    parent_id=asterion_infra_aws.id,
+    name="asterion-infra-aws-prod-ou"
+)

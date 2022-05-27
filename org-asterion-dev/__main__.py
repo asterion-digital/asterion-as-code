@@ -1,5 +1,4 @@
 """An AWS Python Pulumi program to manage setup of the org-asterion-dev aws account"""
-
 import pulumi
 import pulumi_aws as aws
 import json
