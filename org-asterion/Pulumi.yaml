@@ -4,3 +4,4 @@ runtime:
   options:
     virtualenv: venv
 description: Stack to manage asterion aws organizations
+stackConfigDir: /config/

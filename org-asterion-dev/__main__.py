@@ -1,9 +1,7 @@
 """An AWS Python Pulumi program to manage setup of the org-asterion-dev aws account"""
-
 import pulumi
 import pulumi_aws as aws
 import json
-import re
 from pulumi import Config, Output
 
 # Obtain the pulumi configuration
@@ -13,8 +11,8 @@ config = Config()
 stack = pulumi.get_stack()
 
 # Obtain the pulumi account 'organization' field from the config
-org = config.require("currentOrg")
-dev_account_alias = config.require("accountAlias")
+org = config.require("currentOrgName")
+account_alias = config.require("accountAlias")
 
 # Obtain the `org-asterion` pulumi stack
 org_asterion_stack = pulumi.StackReference(f"{org}/org-asterion/{stack}")
@@ -42,7 +40,7 @@ dev_provider = aws.Provider(
 # Create an alias for the asterion-dev account
 alias = aws.iam.AccountAlias(
     "asterion-dev-account-alias",
-    account_alias=dev_account_alias,
+    account_alias=account_alias,
     opts=pulumi.ResourceOptions(
         provider=dev_provider
     )

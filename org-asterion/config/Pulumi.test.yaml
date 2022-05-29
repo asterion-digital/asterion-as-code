@@ -1,0 +1,18 @@
+config:
+  aws:defaultTags:
+    tags:
+      aws-environment: test
+  aws:region: ap-southeast-2
+  org-asterion:accountAlias: asteriontest
+  org-asterion:root:accountId: 814941672613
+  org-asterion:dev:accountId: 822258672282
+  org-asterion:test:accountId: 022525405108
+  org-asterion:prod:accountId: 016114654101
+  org-asterion:environment: test
+  org-asterion:iamUsersToAdd: 
+    users:
+    - shawn
+    - james
+    - dj
+    - kyle
+  pulumi:currentOrgName: shawng
