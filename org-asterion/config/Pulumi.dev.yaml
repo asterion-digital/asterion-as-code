@@ -3,8 +3,15 @@ config:
     tags:
       environment: dev
   aws:region: ap-southeast-2
+  org-asterion:accountId: 822258672282
+  org-asterion:masterAccountId: 814941672613
+  org-asterion:parentId: ou-9kqq-1uteri21
   org-asterion:currentOrgName: shawng
   org-asterion:environment: dev
+  org-asterion:environments: 
+    - dev
+    - test
+    - prod
   org-asterion:iamUsersToAdd: 
     users:
     - shawn

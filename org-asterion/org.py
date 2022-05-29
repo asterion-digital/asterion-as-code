@@ -33,8 +33,8 @@ class org:
             # Set the root id for the aws organization
             self.rootid = self.org.roots[0].id
         except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'create_org()' method of the 'org' class")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'create_org()' method of the 'org' class")
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
     # Static method to check if an aws organization exists for this account
     def org_exists(self):
@@ -51,11 +51,12 @@ class org:
                 return True
 
         except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
             self.org = aws.organizations.get_organization()
             self.rootid = self.org.roots[0].id
             return True
+
 
 # Create an aws object for the asterion-infra-aws organization
 asterion_org = org('asterion-infra-aws')

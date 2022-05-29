@@ -17,8 +17,8 @@ try:
         path="/users/"
     )
 except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-admins iam group")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+    pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-admins iam group")
+    pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
 # Obtain dev stack iam usernames from pulumi configuration
 usernames = config.require_object('iamUsersToAdd')
@@ -40,8 +40,8 @@ for name in usernames["users"]:
             force_destroy=True
         )
     except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a new user: '" + str(name) + "'")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a new user: '" + str(name) + "'")
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
     # Try to create a login for the user
     try:
@@ -50,8 +50,8 @@ for name in usernames["users"]:
             user=name
         )
     except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
+            pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
     # Export user information for the user
     export("new user password for '" + name + "'", new_user_login.password)
