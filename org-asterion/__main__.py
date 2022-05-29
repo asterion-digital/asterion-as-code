@@ -112,7 +112,7 @@ if not account_exists:
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
 # Export the stack aws account id
-pulumi.export("asterion " + str(environment) + " account id", account_id)
+pulumi.export("asterion " + str(environment) + " account id ", account_id)
 
 #####################################################################################
 
