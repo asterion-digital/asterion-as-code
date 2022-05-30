@@ -6,6 +6,7 @@ import account as awsaccount
 import datetime
 import org as awsorg
 import ou as awsou
+import policies as awspolicies
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
@@ -93,34 +94,5 @@ else:
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to move the asterion-" + str(self.environment) + " account")
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
-# Create a policy document for the assumerole policies
-assumerole_policy_document = aws.iam.get_policy_document(
-    statements=[
-        aws.iam.GetPolicyDocumentStatementArgs(
-            actions=[
-                "sts:AssumeRole"
-            ],
-            effect="Allow",
-            resources=[
-                Output.concat("arn:aws:iam::",account_id,":role/administrator")
-            ]
-        )
-    ]
-)
-
-# Create a policy from the policy document
-assumerole_policy = aws.iam.Policy(
-    "asterion-group-admins-policy",
-    description="AssumeRole policy for the asterion-admins group",
-    policy=assumerole_policy_document.json
-)
-
-# Attach the assumerole policy document to the admins group policy
-assumerole_policy_attach = aws.iam.GroupPolicyAttachment(
-    "asterion-group-admins-policy-attachment",
-    group=asterion_users.group.name,
-    policy_arn=assumerole_policy.arn,
-    opts=pulumi.ResourceOptions(
-        depends_on=[assumerole_policy]
-    )
-)
+# Create an aws iam assumerole policy and attach it to this account
+awspolicies.create_attach_assumerole_policy([Output.concat("arn:aws:iam::",account_id,":role/administrator")], groupname)
