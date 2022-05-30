@@ -1,8 +1,15 @@
 """A pulumi program to deploy asterion-digital oganization to aws."""
+# Update sys path to include modules library
+import sys
+sys.path.append('modules')
+import accounts as awsaccounts
 import datetime
+import org as awsorg
+import ou as awsou
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
+import users as awsusers
 from pulumi import Config, ResourceOptions, export, Output
 
 # Obtain pulumi configuration file contents
@@ -11,31 +18,51 @@ config = Config()
 # Set pulumi configuration values
 account_id      =   config.require("accountId")
 environment     =   pulumi.get_stack()
+groupname       =   config.require("iamGroupName")
+usernames       =   config.require_object("iamUsersToAdd")
 org             =   config.require("currentOrgName")
+org_id          =   config.require("orgId")
 parent_id       =   config.require("parentId")
 
 # Get the current pulumi stack
 stack = pulumi.StackReference(f"{org}/org-asterion/{environment}")
 
-# Import the org classes from the org module
-import org as awsorg
+# Create an aws object for the asterion-infra-aws organization
+asterion_org = awsorg.org('asterion-infra-aws', org_id)
+
+# Check if the asterion aws organization object is set else set it
+if not asterion_org.org_exists():
+    asterion_org.create_org()
 
 # Export the org/root/account ids
-pulumi.export("asterion org id", awsorg.asterion_org.org.id)
-pulumi.export("asterion org root resource id", awsorg.asterion_org.rootid)
-pulumi.export("asterion org root account id", awsorg.asterion_org.org.master_account_id)
+pulumi.export("asterion org id", asterion_org.org.id)
+pulumi.export("asterion org root resource id", asterion_org.rootid)
+pulumi.export("asterion org root account id", asterion_org.org.master_account_id)
+
+# Create the asterion main ou
+asterion_infra_aws = awsou.create("", asterion_org.rootid)
+
+# Create the asterion stack ou
+asterion_infra_aws_stack_ou = awsou.create(str(environment), asterion_infra_aws.id)
 
 # Output asterion environment ou id's
-pulumi.export("asterion ou id", awsorg.asterion_infra_aws.id)
-pulumi.export("asterion dev ou id", awsorg.asterion_infra_aws_dev.id)
-pulumi.export("asterion test ou id", awsorg.asterion_infra_aws_test.id)
-pulumi.export("asterion prod ou id", awsorg.asterion_infra_aws_prod.id)
+pulumi.export("asterion ou id", asterion_infra_aws.id)
+pulumi.export("asterion " + str(environment) + " ou id", asterion_infra_aws_stack_ou.id)
 
-# Register the iam users with aws
-import users as users
+# Create an aws object for the asterion iam users
+asterion_users = awsusers.users(usernames, groupname)
+
+# Create the users in aws
+asterion_users.create_users()
+
+# Create the iam group to hold the new users
+asterion_users.create_group()
+
+# Add the new users to the new group
+asterion_users.add_users_to_group()
 
 # Export the iam user arns
-pulumi.export("new user arns", users.arns)
+pulumi.export("new user arns", asterion_users.arns)
 
 #####################################################################################
 
@@ -64,12 +91,12 @@ except BaseException as err:
     pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
 # Define an aws cli command that will move the asteriondev aws account from the root account to the dev ou
-move_account_on_create_cmd=Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", awsorg.asterion_org.rootid, " --destination-parent-id ",
-awsorg.asterion_infra_aws_dev.id)
+move_account_on_create_cmd=Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_org.rootid, " --destination-parent-id ",
+asterion_infra_aws_stack_ou.id)
 
 # Define an aws cli command that will move the asteriondev aws account from the dev ou to the root account
-move_account_on_delete_cmd=Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", awsorg.asterion_infra_aws_dev.id, " --destination-parent-id ",
-awsorg.asterion_org.rootid)
+move_account_on_delete_cmd=Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_infra_aws_stack_ou.id, " --destination-parent-id ",
+asterion_org.rootid)
 
 # Attempt to move stack aws account depending on pulumi state
 try:
@@ -77,7 +104,7 @@ try:
     move_account= command.local.Command('asterion-' + str(environment) + "-move_account_cmd",
         create=move_account_on_create_cmd.apply(lambda v: v),
         delete=move_account_on_delete_cmd.apply(lambda v: v),
-        opts=pulumi.ResourceOptions(depends_on=[awsorg.asterion_infra_aws_dev])
+        opts=pulumi.ResourceOptions(depends_on=[asterion_infra_aws_stack_ou])
     )
 except BaseException as err:
     pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found while trying to move the '" + str(environment) + "' account '" + account_id + "'")
@@ -97,7 +124,7 @@ if not account_exists:
             "asterion-" + str(environment) + "-account",
             email="asterion-infra-aws-" + str(environment) + "@asterion.digital",
             name="Asterion Infra-AWS " + str(environment.capitalize()) + " Team",
-            parent_id=awsorg.asterion_infra_aws_dev.id,
+            parent_id=asterion_infra_aws_stack_ou.id,
             opts=pulumi.ResourceOptions(
                 retain_on_delete=True,
                 depends_on=[move_account]
@@ -107,12 +134,12 @@ if not account_exists:
         # Update the stack account id with the new aws id
         account_id = asterion_infra_aws_acc.id
 
+        # Export the new stack aws account id
+        pulumi.export("asterion " + str(environment) + " account id ", account_id)
+
     except BaseException as err:
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-" + str(environment) + " account")
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-# Export the stack aws account id
-pulumi.export("asterion " + str(environment) + " account id ", account_id)
 
 #####################################################################################
 
@@ -129,7 +156,7 @@ assumerole_policy_document = aws.iam.get_policy_document(
             ],
             effect="Allow",
             resources=[
-                Output.concat("arn:aws:iam::", account_id, ":role/administrator"),
+                Output.all(account_id).apply(lambda v: "arn:aws:iam::{v}:role/administrator")
             ]
         )
     ]
@@ -137,7 +164,7 @@ assumerole_policy_document = aws.iam.get_policy_document(
 
 # Attach the assumerole policy document to the admins group policy
 admin_group_assumerole_policy = aws.iam.GroupPolicy("asterion-group-admins-policy",
-    group=users.admin_group.name,
+    group=asterion_users.group.name,
     policy=assumerole_policy_document.json
 )
 
