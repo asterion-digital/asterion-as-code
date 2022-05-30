@@ -21,11 +21,7 @@ account_id      =   config.require("accountId")
 environment     =   pulumi.get_stack()
 groupname       =   config.require("iamGroupName")
 usernames       =   config.require_object("iamUsersToAdd")
-org             =   config.require("currentOrgName")
 org_id          =   config.require("orgId")
-
-# Get the current pulumi stack
-stack = pulumi.StackReference(f"{org}/org-asterion/{environment}")
 
 # Create an aws object for the asterion-infra-aws organization
 asterion_org = awsorg.org('asterion-infra-aws', org_id)
@@ -90,7 +86,7 @@ else:
             )
         )
     except BaseException as err:
-        pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to move the asterion-" + str(self.environment) + " account")
+        pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to move the asterion-" + str(environment) + " account")
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
 # Create an aws iam assumerole policy and attach it to this account
