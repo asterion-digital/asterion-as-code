@@ -1,0 +1,4 @@
+config:
+  org-asterion-dev:accountAlias: asteriondev
+  org-asterion-dev:currentOrg: shawng
+  org-asterion-dev:region: ap-southeast-2
