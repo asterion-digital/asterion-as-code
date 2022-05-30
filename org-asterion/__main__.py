@@ -157,15 +157,27 @@ assumerole_policy_document = aws.iam.get_policy_document(
             effect="Allow",
             resources=[
                 Output.concat("arn:aws:iam::",account_id,":role/administrator")
+                #Output.all(account_id).apply(lambda v: "arn:aws:iam::{v}:role/administrator")
             ]
         )
     ]
 )
 
-# Attach the assumerole policy document to the admins group policy
-admin_group_assumerole_policy = aws.iam.GroupPolicy("asterion-group-admins-policy",
-    group=asterion_users.group.name,
+# Create a policy from the policy document
+assumerole_policy = aws.iam.Policy(
+    "asterion-group-admins-policy",
+    description="AssumeRole policy for the asterion-admins group",
     policy=assumerole_policy_document.json
+)
+
+# Attach the assumerole policy document to the admins group policy
+assumerole_policy_attach = aws.iam.GroupPolicyAttachment(
+    "asterion-group-admins-policy-attachment",
+    group=asterion_users.group.name,
+    policy_arn=assumerole_policy.arn,
+    opts=pulumi.ResourceOptions(
+        depends_on=[assumerole_policy]
+    )
 )
 
 #########################################################################################
