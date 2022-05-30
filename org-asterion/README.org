@@ -5,6 +5,10 @@
 
 This repository captures the end to end workflow for deploying asterion digital aws organization and iam via [[https://www.pulumi.com/][pulumi]].
 
+The asterion organization on aws will contain a number of aws organizational units as well as aws accounts and iam resources. When the organization has been deployed into aws, it should look similar to this:
+
+![alt text](https://github.com/asterion-digital/asterion-as-code/blob/master/org-asterion/asterion-aws-org-components.svg)
+
 
 * Setup environment
 
