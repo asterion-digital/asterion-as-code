@@ -39,7 +39,10 @@ class users:
             try:
                 new_user_login = aws.iam.UserLoginProfile(
                     "asterion-user-login-" + name,
-                    user=name
+                    user=name,
+                    opts=pulumi.ResourceOptions(
+                        depends_on=[new_user]
+                    )
                 )
             except BaseException as err:
                     pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")

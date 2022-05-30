@@ -34,7 +34,7 @@ class org:
             
             # Set the root id for the aws organization
             self.rootid = self.org.roots[0].id
-
+            
         except BaseException as err:
             pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'create_org()' method of the 'org' class")
             pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
@@ -51,12 +51,12 @@ class org:
 
             # Check if the organization has any root accounts
             if Output.all(self.org.id, self.org_id).apply(lambda v: True if (v[0] == v[1]) else False):
+                
+                # Try to set the root id of the org
+                self.rootid = self.org.roots[0].id
                 return True
             else:
                 return False
-
-            # Try to set the root id of the org
-            self.rootid = self.org.roots[0].id
 
         except BaseException as err:
             pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")

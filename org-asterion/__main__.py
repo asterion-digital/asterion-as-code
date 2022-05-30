@@ -2,7 +2,7 @@
 # Update sys path to include modules library
 import sys
 sys.path.append('modules')
-import accounts as awsaccounts
+import account as awsaccount
 import datetime
 import org as awsorg
 import ou as awsou
@@ -64,88 +64,34 @@ asterion_users.add_users_to_group()
 # Export the iam user arns
 pulumi.export("new user arns", asterion_users.arns)
 
-#####################################################################################
+# Create an object for the stack aws account
+asterion_account = awsaccount.account("Asterion Infra-AWS " + str(environment.capitalize()) + " Team", str(environment), asterion_infra_aws_stack_ou, account_id)
 
-# TODO: If wanting to make the stack tear down process 
-# repeatable/automated, you will need to create a 
-# conditional statement that checks if the accounts 
-# exist in a "suspended account" OU first and obtain 
-# those before creating new accounts.
+# Check if the asterion aws account exists
+if not asterion_account.account_exists():
 
-#####################################################################################
-# Create asterion aws accounts
-#####################################################################################
+    # Stack aws account does not exist - create the asterion aws account
+    asterion_account.create_account()
 
-# Try to obtain an existing AWS account
-try:
-    existing_account = aws.organizations.Account.get(
-        resource_name="Asterion Infra-AWS " + str(environment.capitalize()) + " Team",
-        id=account_id
-    )
+else:
 
-    # Export the new dev aws account id
-    pulumi.export("asterion " + str(environment) + " account id", existing_account.id)
-
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found while trying to obtain the 'Asterion Infra-AWS " + str(environment.capitalize()) + " Team' account '" + account_id + "'")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-# Define an aws cli command that will move the asteriondev aws account from the root account to the dev ou
-move_account_on_create_cmd=Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_org.rootid, " --destination-parent-id ",
-asterion_infra_aws_stack_ou.id)
-
-# Define an aws cli command that will move the asteriondev aws account from the dev ou to the root account
-move_account_on_delete_cmd=Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_infra_aws_stack_ou.id, " --destination-parent-id ",
-asterion_org.rootid)
-
-# Attempt to move stack aws account depending on pulumi state
-try:
-    # Run the local command
-    move_account= command.local.Command('asterion-' + str(environment) + "-move_account_cmd",
-        create=move_account_on_create_cmd.apply(lambda v: v),
-        delete=move_account_on_delete_cmd.apply(lambda v: v),
-        opts=pulumi.ResourceOptions(depends_on=[asterion_infra_aws_stack_ou])
-    )
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found while trying to move the '" + str(environment) + "' account '" + account_id + "'")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-# Ensure the stack aws account id is up-to-date
-account_id = stack.get_output("asterion " + environment + " account id")
-
-# Determine if the stack's aws account exists by comparing the current stack id with the existing account id
-account_exists = Output.all(existing_account.id, account_id).apply(
-    lambda v: True if (v[0] == v[1]) else False)
-
-# Try to create asterion infra-aws environment account if it doesn't exist
-if not account_exists:
+    # Create the commands to move the existing aws account
+    createcmd = Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_org.rootid, " --destination-parent-id ", asterion_infra_aws_stack_ou.id)
+    deletecmd = Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_infra_aws_stack_ou.id, " --destination-parent-id ", asterion_org.rootid)
+    
+    # Stack aws account exists - move the existing account from root to stack parent ou
     try:
-        asterion_infra_aws_acc = aws.organizations.Account(
-            "asterion-" + str(environment) + "-account",
-            email="asterion-infra-aws-" + str(environment) + "@asterion.digital",
-            name="Asterion Infra-AWS " + str(environment.capitalize()) + " Team",
-            parent_id=asterion_infra_aws_stack_ou.id,
+        movecmd = command.local.Command(
+            'asterion-' + str(environment) + "-move_account_cmd",
+            create=createcmd.apply(lambda v:v),
+            delete=deletecmd.apply(lambda v:v),
             opts=pulumi.ResourceOptions(
-                retain_on_delete=True,
-                depends_on=[move_account]
+                depends_on=[asterion_infra_aws_stack_ou]
             )
         )
-
-        # Update the stack account id with the new aws id
-        account_id = asterion_infra_aws_acc.id
-
-        # Export the new stack aws account id
-        pulumi.export("asterion " + str(environment) + " account id ", account_id)
-
     except BaseException as err:
-        pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-" + str(environment) + " account")
+        pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to move the asterion-" + str(self.environment) + " account")
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-#####################################################################################
-
-#####################################################################################
-# Create and apply asterion aws iam user and role policies
-#####################################################################################
 
 # Create a policy document for the assumerole policies
 assumerole_policy_document = aws.iam.get_policy_document(
@@ -157,7 +103,6 @@ assumerole_policy_document = aws.iam.get_policy_document(
             effect="Allow",
             resources=[
                 Output.concat("arn:aws:iam::",account_id,":role/administrator")
-                #Output.all(account_id).apply(lambda v: "arn:aws:iam::{v}:role/administrator")
             ]
         )
     ]
@@ -179,5 +124,3 @@ assumerole_policy_attach = aws.iam.GroupPolicyAttachment(
         depends_on=[assumerole_policy]
     )
 )
-
-#########################################################################################
