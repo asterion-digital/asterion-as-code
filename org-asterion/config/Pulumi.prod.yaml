@@ -4,17 +4,19 @@ config:
       environment: prod
   aws:region: ap-southeast-2
   org-asterion:accountId: 016114654101
-  org-asterion:masterAccountId: 814941672613
-  org-asterion:parentId: ou-9kqq-sch6cmkd
   org-asterion:currentOrgName: shawng
   org-asterion:environment: prod
   org-asterion:environments: 
     - dev
     - test
     - prod
+  org-asterion:iamGroupName: asterion-admins
   org-asterion:iamUsersToAdd: 
     users:
     - shawn
     - james
     - dj
     - kyle
+  org-asterion:masterAccountId: 814941672613
+  org-asterion:orgId: o-s4sfk2iwpm
+  org-asterion:rootId: r-9kqq

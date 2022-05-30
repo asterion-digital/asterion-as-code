@@ -23,7 +23,6 @@ groupname       =   config.require("iamGroupName")
 usernames       =   config.require_object("iamUsersToAdd")
 org             =   config.require("currentOrgName")
 org_id          =   config.require("orgId")
-parent_id       =   config.require("parentId")
 
 # Get the current pulumi stack
 stack = pulumi.StackReference(f"{org}/org-asterion/{environment}")

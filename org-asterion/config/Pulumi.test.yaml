@@ -1,20 +1,22 @@
 config:
   aws:defaultTags:
     tags:
-      environment: test
+      environment: dev
   aws:region: ap-southeast-2
   org-asterion:accountId: 022525405108
-  org-asterion:masterAccountId: 814941672613
-  org-asterion:parentId: ou-9kqq-u2jjfher
   org-asterion:currentOrgName: shawng
-  org-asterion:environment: test
+  org-asterion:environment: dev
   org-asterion:environments: 
     - dev
     - test
     - prod
+  org-asterion:iamGroupName: asterion-admins
   org-asterion:iamUsersToAdd: 
     users:
     - shawn
     - james
     - dj
     - kyle
+  org-asterion:masterAccountId: 814941672613
+  org-asterion:orgId: o-s4sfk2iwpm
+  org-asterion:rootId: r-9kqq
