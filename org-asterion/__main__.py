@@ -156,7 +156,7 @@ assumerole_policy_document = aws.iam.get_policy_document(
             ],
             effect="Allow",
             resources=[
-                Output.all(account_id).apply(lambda v: "arn:aws:iam::{v}:role/administrator")
+                Output.concat("arn:aws:iam::",account_id,":role/administrator")
             ]
         )
     ]
