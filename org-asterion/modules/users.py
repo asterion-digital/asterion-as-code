@@ -18,11 +18,14 @@ class users:
         self.output_usernames = []
         self.usernames = usernames
 
-    # Create the users from the provided iam list
+    # Static method to create the users from the provided iam list
     def create_users(self):
 
         # Iterate through the list of usernames
         for name in self.usernames["users"]:
+            
+            # Check if the user already exists
+
 
             # Try to create an iam user account
             try:
@@ -48,16 +51,17 @@ class users:
                     pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
                     pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
-            # Export user information for the user
+            # Export user information to the stack
             export("new user password for '" + name + "'", new_user_login.password)
+            export("user " + name + " id", new_user.id)
 
             # Add the user to the list of administrators
             self.output_usernames.append(new_user.name.apply(lambda v:v))
 
             # Add the user arn to the list of arns
             self.arns.append(new_user.arn.apply(lambda v:v))
-        
-    # Create an iam group for the users
+
+    # Static method to create an iam group for the users
     def create_group(self):
 
         # Try to create an asterion iam group for administrative users
@@ -72,7 +76,7 @@ class users:
             pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the '" + self.groupname + "' iam group")
             pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
-    # Add the defined users to the defined group
+    # Static method to add the defined users to the defined group
     def add_users_to_group(self):
 
         # Add the users to the admin group
@@ -81,3 +85,7 @@ class users:
             users=self.output_usernames,
             group=self.group.name
         )
+
+    # Static method to check if a specific username already exists
+    def user_exists(self):
+        return True
