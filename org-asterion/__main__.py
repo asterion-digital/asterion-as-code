@@ -46,7 +46,7 @@ pulumi.export("asterion ou id", asterion_infra_aws.id)
 pulumi.export("asterion " + str(environment) + " ou id", asterion_infra_aws_stack_ou.id)
 
 # Create an aws object for the asterion iam users
-asterion_users = awsusers.users(usernames, groupname)
+asterion_users = awsusers.users(usernames, groupname, environment)
 
 # Create the users in aws
 asterion_users.create_users()
@@ -78,7 +78,7 @@ else:
     # Stack aws account exists - move the existing account from root to stack parent ou
     try:
         movecmd = command.local.Command(
-            'asterion-' + str(environment) + "-move_account_cmd",
+            "asterion-" + str(environment) + "-move_account_cmd",
             create=createcmd.apply(lambda v:v),
             delete=deletecmd.apply(lambda v:v),
             opts=pulumi.ResourceOptions(
