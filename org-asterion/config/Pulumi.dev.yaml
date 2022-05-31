@@ -1,0 +1,21 @@
+config:
+  aws:defaultTags:
+    tags:
+      environment: dev
+  aws:region: ap-southeast-2
+  org-asterion:accountId: 822258672282
+  org-asterion:environment: dev
+  org-asterion:environments: 
+    - dev
+    - test
+    - prod
+  org-asterion:iamGroupName: asterion-admins
+  org-asterion:iamUsersToAdd: 
+    users:
+    - shawn
+    - james
+    - daljit
+    - kyle
+  org-asterion:masterAccountId: 814941672613
+  org-asterion:orgId: o-s4sfk2iwpm
+  org-asterion:rootId: r-9kqq

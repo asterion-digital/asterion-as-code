@@ -1,265 +1,93 @@
 """A pulumi program to deploy asterion-digital oganization to aws."""
-
+# Update sys path to include modules library
+import sys
+sys.path.append('modules')
+import account as awsaccount
 import datetime
-import json
+import org as awsorg
+import ou as awsou
+import policies as awspolicies
 import pulumi
 import pulumi_aws as aws
-import re
+import pulumi_command as command
+import users as awsusers
 from pulumi import Config, ResourceOptions, export, Output
-
-#####################################################################################
-# Create asterion aws organization and organizational units
-#####################################################################################
-
-# Class definition for org
-class org:
-    # Default constructor
-    def __init__(self, name):
-        self.name = name
-        self.org = object
-        self.rootid = object
-
-    # Static method to create an aws organization
-    def create_org(self):
-        
-        # Attempt to create an aws organization for this current account
-        try:
-            self.org = aws.organizations.Organization(
-                self.name,
-                aws_service_access_principals=[
-                    "cloudtrail.amazonaws.com",
-                    "config.amazonaws.com",
-                    "account.amazonaws.com",
-                ],
-                feature_set="ALL",
-                opts=pulumi.ResourceOptions(retain_on_delete=True))
-            
-            # Set the root id for the aws organization
-            self.rootid = self.org.roots[0].id
-        except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'create_org()' method of the 'org' class")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-    # Static method to check if an aws organization exists for this account
-    def org_exists(self):
-
-        # Attempt to create the organization
-        try:
-            self.create_org()
-            self.rootid = self.org.roots[0].id
-
-            # Check if the organization has any root accounts
-            if self.rootid is None or self.rootid == "":
-                return False
-            else:
-                return True
-
-        except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found in the 'org_exists()' method of the 'org' class")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-            self.org = aws.organizations.get_organization()
-            self.rootid = self.org.roots[0].id
-            return True
 
 # Obtain pulumi configuration file contents
 config = Config()
 
+# Set pulumi configuration values
+account_id      =   config.require("accountId")
+environment     =   pulumi.get_stack()
+groupname       =   config.require("iamGroupName")
+usernames       =   config.require_object("iamUsersToAdd")
+org_id          =   config.require("orgId")
+
 # Create an aws object for the asterion-infra-aws organization
-asterion_org = org('asterion-infra-aws')
+asterion_org = awsorg.org('asterion-infra-aws', org_id)
 
 # Check if the asterion aws organization object is set else set it
 if not asterion_org.org_exists():
     asterion_org.create_org()
+
+# Export the org/root/account ids
 pulumi.export("asterion org id", asterion_org.org.id)
-pulumi.export("asterion org root id", asterion_org.rootid)
-pulumi.export("asterion org account id", asterion_org.org.master_account_id)
+pulumi.export("asterion org root resource id", asterion_org.rootid)
+pulumi.export("asterion org root account id", asterion_org.org.master_account_id)
 
-# Create asterion infra-aws organizational unit
-asterion_infra_aws = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-ou", 
-    parent_id=asterion_org.rootid,
-    name="asterion-infra-aws-ou"
-)
+# Create the asterion main ou
+asterion_infra_aws = awsou.create("", asterion_org.rootid)
 
-# Create asterion infra-aws environment ou's
-asterion_infra_aws_dev = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-dev-ou",
-    parent_id=asterion_infra_aws.id,
-    name="asterion-infra-aws-dev-ou"
-)
-asterion_infra_aws_test = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-test-ou", 
-    parent_id=asterion_infra_aws.id,
-    name="asterion-infra-aws-test-ou"
-)
-asterion_infra_aws_prod = aws.organizations.OrganizationalUnit(
-    "asterion-infra-aws-prod", 
-    parent_id=asterion_infra_aws.id,
-    name="asterion-infra-aws-prod-ou"
-)
+# Create the asterion stack ou
+asterion_infra_aws_stack_ou = awsou.create(str(environment), asterion_infra_aws.id)
 
 # Output asterion environment ou id's
-pulumi.export("asterion dev ou id", asterion_infra_aws.id)
-pulumi.export("asterion dev ou id", asterion_infra_aws_dev.id)
-pulumi.export("asterion test ou id", asterion_infra_aws_test.id)
-pulumi.export("asterion prod ou id", asterion_infra_aws_prod.id)
+pulumi.export("asterion ou id", asterion_infra_aws.id)
+pulumi.export("asterion " + str(environment) + " ou id", asterion_infra_aws_stack_ou.id)
 
-#####################################################################################
+# Create an aws object for the asterion iam users
+asterion_users = awsusers.users(usernames, groupname, environment)
 
-#####################################################################################
-# Create asterion aws iam users
-#####################################################################################
+# Create the users in aws
+asterion_users.create_users()
 
-# Try to create an asterion iam group for administrative users
-try:
-    admin_group = aws.iam.Group(
-        "asterion-admins",
-        name="asterion-admins",
-        path="/users/"
-    )
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-admins iam group")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+# Create the iam group to hold the new users
+asterion_users.create_group()
 
-# Obtain dev stack iam usernames from pulumi configuration
-new_usernames = config.require('newUsernames')
+# Add the new users to the new group
+asterion_users.add_users_to_group()
 
-# Export the list of username strings
-export("username string list", new_usernames)
+# Export the iam user arns
+pulumi.export("new user arns", asterion_users.arns)
 
-# Split the usernames string into a list
-usernames = re.split('[;,.\-\%]',str(new_usernames))
+# Create an object for the stack aws account
+asterion_account = awsaccount.account("Asterion Infra-AWS " + str(environment.capitalize()) + " Team", str(environment), asterion_infra_aws_stack_ou, account_id)
 
-# Define a list of administrator usernames for later
-administrators = []
+# Check if the asterion aws account exists
+if not asterion_account.account_exists():
 
-# Define a list of administrator arns for later
-arns = []
+    # Stack aws account does not exist - create the asterion aws account
+    asterion_account.create_account()
 
-# Create the asterion users
-for name in usernames:
+else:
 
-    # Try to create an iam user account
+    # Create the commands to move the existing aws account
+    createcmd = Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_org.rootid, " --destination-parent-id ", asterion_infra_aws_stack_ou.id)
+    deletecmd = Output.concat("aws organizations move-account --account-id ", account_id, " --source-parent-id ", asterion_infra_aws_stack_ou.id, " --destination-parent-id ", asterion_org.rootid)
+    
+    # Stack aws account exists - move the existing account from root to stack parent ou
     try:
-        new_user = aws.iam.User(
-            "asterion-user-" + name,
-            name=name,
-            force_destroy=True
+        movecmd = command.local.Command(
+            "asterion-" + str(environment) + "-move_account_cmd",
+            create=createcmd.apply(lambda v:v),
+            delete=deletecmd.apply(lambda v:v),
+            opts=pulumi.ResourceOptions(
+                depends_on=[asterion_infra_aws_stack_ou]
+            )
         )
     except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a new user: '" + str(name) + "'")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
+        pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to move the asterion-" + str(environment) + " account")
+        pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
-    # Try to create a login for the user
-    try:
-        new_user_login = aws.iam.UserLoginProfile(
-            "asterion-user-login-" + name,
-            user=name
-        )
-    except BaseException as err:
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
-            pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-    # Export password for the user
-    export("new user password for '" + name + "'", new_user_login.password)
-
-    # Add the user to the list of administrators
-    administrators.append(new_user.name.apply(lambda v:v))
-
-    # Add the user arn to the list of arns
-    arns.append(new_user.arn.apply(lambda v:v))
-
-# Export the user arns
-pulumi.export("user arns", arns)
-
-# Add the users to the admin group
-admin_team = aws.iam.GroupMembership(
-    "asterion-admins-team-members",
-    users=administrators,
-    group=admin_group.name
-)
-
-#####################################################################################
-
-# TODO: If wanting to make the stack tear down process 
-# repeatable/automated, you will need to create a 
-# conditional statement that checks if the accounts 
-# exist in a "suspended account" OU first and obtain 
-# those before creating new accounts.
-
-#####################################################################################
-# Create asterion aws accounts
-#####################################################################################
-
-# Try to create asterion infra-aws environment accounts
-try:
-    asterion_infra_aws_dev_acc = aws.organizations.Account(
-        "asterion-dev-account",
-        email="asterion-infra-aws-dev@asterion.digital",
-        name="Asterion Infra-AWS Dev Team",
-        parent_id=asterion_infra_aws_dev.id,
-        opts=pulumi.ResourceOptions(retain_on_delete=True)
-    )
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-dev account")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-try:
-    asterion_infra_aws_test_acc = aws.organizations.Account(
-        "asterion-test-account",
-        email="asterion-infra-aws-test@asterion.digital",
-        name="Asterion Infra-AWS Test Team",
-        parent_id=asterion_infra_aws_test.id,
-        opts=pulumi.ResourceOptions(retain_on_delete=True)
-    )
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-test account")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-try:
-    asterion_infra_aws_prod_acc = aws.organizations.Account(
-        "asterion-prod-account",
-        email="asterion-infra-aws-prod@asterion.digital",
-        name="Asterion Infra-AWS Prod Team",
-        parent_id=asterion_infra_aws_prod.id,
-        opts=pulumi.ResourceOptions(retain_on_delete=True)
-    )
-except BaseException as err:
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create the asterion-prod account")
-    pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
-
-# Output asterion account id's
-pulumi.export("asterion dev account id", asterion_infra_aws_dev_acc.id)
-pulumi.export("asterion test account id", asterion_infra_aws_test_acc.id)
-pulumi.export("asterion prod account id", asterion_infra_aws_prod_acc.id)
-
-#####################################################################################
-
-#####################################################################################
-# Create and apply asterion aws iam user and role policies
-#####################################################################################
-
-# Create a policy document for the assumerole policies
-assumerole_policy_document = aws.iam.get_policy_document(
-    statements=[
-        aws.iam.GetPolicyDocumentStatementArgs(
-            actions=[
-                "sts:AssumeRole"
-            ],
-            effect="Allow",
-            resources=[
-                Output.concat("arn:aws:iam::",asterion_infra_aws_dev_acc.id,":role/administrator"),
-                Output.concat("arn:aws:iam::",asterion_infra_aws_test_acc.id,":role/administrator"),
-                Output.concat("arn:aws:iam::",asterion_infra_aws_prod_acc.id,":role/administrator")
-            ]
-        )
-    ]
-)
-
-# Attach the assumerole policy document to the admins group policy
-admin_group_assumerole_policy = aws.iam.GroupPolicy("asterion-group-admins-policy",
-    group=admin_group.name,
-    policy=assumerole_policy_document.json
-)
-
-#########################################################################################
+# Create an aws iam assumerole policy and attach it to this account
+awspolicies.create_attach_assumerole_policy([Output.concat("arn:aws:iam::",account_id,":role/administrator")], groupname)
