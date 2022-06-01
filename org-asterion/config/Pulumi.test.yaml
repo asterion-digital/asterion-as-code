@@ -1,10 +1,11 @@
 config:
   aws:defaultTags:
     tags:
-      environment: dev
+      environment: test
   aws:region: ap-southeast-2
   org-asterion:accountId: 022525405108
-  org-asterion:environment: dev
+  org-asterion:pulumiOrgName: shawng
+  org-asterion:environment: test
   org-asterion:environments: 
     - dev
     - test
@@ -14,7 +15,7 @@ config:
     users:
     - shawn
     - james
-    - dj
+    - daljit
     - kyle
   org-asterion:masterAccountId: 814941672613
   org-asterion:orgId: o-s4sfk2iwpm
