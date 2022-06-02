@@ -4,7 +4,6 @@ config:
       environment: test
   aws:region: ap-southeast-2
   org-asterion:accountId: 022525405108
-  org-asterion:pulumiOrgName: shawng
   org-asterion:environment: test
   org-asterion:environments: 
     - dev
@@ -19,4 +18,5 @@ config:
     - kyle
   org-asterion:masterAccountId: 814941672613
   org-asterion:orgId: o-s4sfk2iwpm
+  org-asterion:pulumiOrgName: shawng
   org-asterion:rootId: r-9kqq

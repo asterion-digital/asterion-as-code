@@ -6,7 +6,7 @@ import datetime
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
-from pulumi import Config, ResourceOptions, export, Output
+from pulumi import Config, ResourceOptions, Output
 
 # Class definition for users
 class users:
@@ -38,8 +38,8 @@ class users:
                 )
 
             except BaseException as err:
-                    pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a new user: '" + str(name) + "'")
-                    pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
+                pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a new user: '" + str(name) + "'")
+                pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
 
             # Try to create a login for the user
             try:
@@ -50,17 +50,19 @@ class users:
                         depends_on=[new_user]
                     )
                 )
-                
+
             except BaseException as err:
-                    pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
-                    pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
+                pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
+                pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
+            
+            Output.all(new_user_login.password).apply(lambda v: pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): new user password is: " + v[0]))
 
             # Export user information to the stack
-            export("new user password for '" + name + "'", new_user_login.password)
-            export("user " + name + " id", new_user.unique_id)
+            pulumi.export("new user password for '" + name + "'", new_user_login.password)
+            pulumi.export("user " + name + " id", new_user.unique_id)
 
             # Add the user to the list of administrators
-            self.output_usernames.append(new_user.name.apply(lambda v:v))
+            self.output_usernames.append(new_user.name).apply(lambda v:v)
 
             # Add the user arn to the list of arns
             self.arns.append(new_user.arn.apply(lambda v:v))
@@ -99,7 +101,10 @@ class users:
         self.groupmembership = aws.iam.GroupMembership(
             self.groupname + "-team-members",
             users=self.output_usernames,
-            group=self.group.name
+            group=self.group.name,
+            opts=pulumi.ResourceOptions(
+                depends_on=[self.group]
+            )
         )
 
     # Static method to check if a specific username already exists
@@ -116,7 +121,7 @@ class users:
             )
 
             # Export the user id
-            export("user " + username + " id", user_awsid.stdout)
+            pulumi.export("user " + username + " id", user_awsid.stdout)
 
         except BaseException as err:
             pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to check if user '" + username + "' exists")
