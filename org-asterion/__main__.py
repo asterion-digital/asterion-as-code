@@ -5,14 +5,16 @@ import sys
 sys.path.append('modules')
 import account as awsaccount
 import datetime
+import json
 import org as awsorg
 import ou as awsou
 import policies as awspolicies
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
+import update_stack
 import users as awsusers
-from pulumi import Config, ResourceOptions, export, Output, StackReference
+from pulumi import Config, ResourceOptions, export, Output
 
 # Obtain pulumi configuration file contents
 config = Config()
@@ -49,14 +51,14 @@ asterion_users = awsusers.users(usernames, groupname, stack_environment)
 # Create the users in aws
 asterion_users.process_users(asterion_infra_aws_stack_ou)
 
+# Export the iam user arns
+pulumi.export("new user arns", asterion_users.arns)
+
 # Create the iam group to hold the new users
 asterion_users.create_group()
 
 # Add the new users to the new group
 asterion_users.add_users_to_group()
-
-# Export the iam user arns
-pulumi.export("new user arns", asterion_users.arns)
 
 # Create an object for the stack aws account
 asterion_account = awsaccount.account("Asterion Infra-AWS " + str(stack_environment.capitalize()) + " Team", str(stack_environment), asterion_infra_aws_stack_ou, account_id)
@@ -90,67 +92,8 @@ else:
 # Create an aws iam assumerole policy and attach it to this account
 awspolicies.create_attach_assumerole_policy([Output.concat("arn:aws:iam::", account_id, ":role/administrator")], groupname)
 
+# Set stack update object
+stack_update = update_stack.UpdateStackAccount(asterion_users)
 
-# Create a class to update the current stack account using the default role
-class UpdateStackAccount:
-
-    def assume_role_update_stack_account():
-
-        # Create a provider that will assume the default `OrganizationAccountAccessRole` role in the asterion aws stack account
-        provider = aws.Provider(
-            "asterion-" + stack_environment + "-account-provider",
-            assume_role=aws.ProviderAssumeRoleArgs(
-                role_arn=Output.concat("arn:aws:iam::",asterion_account.account.id,":role/OrganizationAccountAccessRole"),
-                session_name="PulumiSession",
-                external_id="PulumiApplication"
-            ),
-            region=config.require('region')
-        )
-
-        # Define an inline policy document in the asterion dev account for resource permissions
-        asterion_dev_policy_document = aws.iam.get_policy_document(
-            statements=[
-                aws.iam.GetPolicyDocumentStatementArgs(
-                    actions=[
-                        "ec2:*"
-                    ],
-                    effect="Allow",
-                    resources=[
-                        Output.concat("arn:aws:ec2::",asterion_infra_aws_dev_acc.id,":*")
-                    ]
-                )
-            ],
-            opts=pulumi.InvokeOptions(provider=provider)
-        )
-
-        # Define a policy document that allows the administrator role to be assumed
-        assume_role_policy_document = aws.iam.get_policy_document(
-            statements=[
-                aws.iam.GetPolicyDocumentStatementArgs(
-                    actions=[
-                        "sts:AssumeRole"
-                    ],
-                    effect="Allow",
-                    principals=[
-                        aws.iam.GetPolicyDocumentStatementPrincipalArgs(
-                            identifiers=[Output.concat("arn:aws:iam::",asterion_infra_aws_org.org.master_account_id,":user/administrator")],
-                            type="AWS"
-                        )
-                    ]
-                )
-            ],
-            opts=pulumi.InvokeOptions(provider=provider)
-        )
-
-        # Create a new role in the asterion dev account 
-        admin_dev_role = aws.iam.Role(
-            "asterion-dev-admin-role",
-            assume_role_policy=assume_role_policy_document.json,
-            inline_policies=[
-                aws.iam.RoleInlinePolicyArgs(
-                    name="asterion-dev-resource-policy",
-                    policy=asterion_dev_policy_document.json
-                )
-            ],
-            opts=pulumi.ResourceOptions(provider=provider)
-        ) 
+# Deploy stack updates
+stack_update.update_stack_account()
