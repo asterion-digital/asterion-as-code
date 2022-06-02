@@ -4,14 +4,9 @@
 import pulumi
 import pulumi_aws as aws
 import datetime
-from pulumi import ResourceOptions, Config
 
 # Static method to create an organizational unit in aws
 def create(name, parentid):
-
-    # Prefix the name value if needed
-    if name != "":
-        name = "-" + name
 
     # Attempt to create the organization
     try:

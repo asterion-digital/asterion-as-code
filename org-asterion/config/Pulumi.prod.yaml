@@ -14,7 +14,7 @@ config:
     users:
     - shawn
     - james
-    - dj
+    - daljit
     - kyle
   org-asterion:masterAccountId: 814941672613
   org-asterion:orgId: o-s4sfk2iwpm
