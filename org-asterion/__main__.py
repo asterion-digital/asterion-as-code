@@ -5,14 +5,16 @@ import sys
 sys.path.append('modules')
 import account as awsaccount
 import datetime
+import json
 import org as awsorg
 import ou as awsou
 import policies as awspolicies
 import pulumi
 import pulumi_aws as aws
 import pulumi_command as command
+import update_stack
 import users as awsusers
-from pulumi import Config, ResourceOptions, export, Output, StackReference
+from pulumi import Config, ResourceOptions, export, Output
 
 # Obtain pulumi configuration file contents
 config = Config()
@@ -49,14 +51,14 @@ asterion_users = awsusers.users(usernames, groupname, stack_environment)
 # Create the users in aws
 asterion_users.process_users(asterion_infra_aws_stack_ou)
 
+# Export the iam user arns
+pulumi.export("new user arns", asterion_users.arns)
+
 # Create the iam group to hold the new users
 asterion_users.create_group()
 
 # Add the new users to the new group
 asterion_users.add_users_to_group()
-
-# Export the iam user arns
-pulumi.export("new user arns", asterion_users.arns)
 
 # Create an object for the stack aws account
 asterion_account = awsaccount.account("Asterion Infra-AWS " + str(stack_environment.capitalize()) + " Team", str(stack_environment), asterion_infra_aws_stack_ou, account_id)
@@ -89,3 +91,9 @@ else:
 
 # Create an aws iam assumerole policy and attach it to this account
 awspolicies.create_attach_assumerole_policy([Output.concat("arn:aws:iam::", account_id, ":role/administrator")], groupname)
+
+# Set stack update object
+stack_update = update_stack.UpdateStackAccount(asterion_users)
+
+# Deploy stack updates
+stack_update.update_stack_account()

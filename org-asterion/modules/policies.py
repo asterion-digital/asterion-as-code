@@ -3,9 +3,7 @@
 #####################################################################################
 import pulumi
 import pulumi_aws as aws
-import datetime
-import pulumi_command as command
-from pulumi import ResourceOptions, Config, Output
+from pulumi import ResourceOptions
 
 # Define and attach an asterion assumerole policy for this stack
 def create_attach_assumerole_policy(resources, groupname):
@@ -39,3 +37,9 @@ def create_attach_assumerole_policy(resources, groupname):
             depends_on=[assumerole_policy]
         )
     )
+
+# Define and attach asterion resource policies for admin users in this stack
+
+# Allow users to modify THEIR OWN iam re accesskeys
+
+# Allow admin users to be able to deploy all services in dev aws account

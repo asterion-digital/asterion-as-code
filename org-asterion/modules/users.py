@@ -55,29 +55,12 @@ class users:
                 pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): There was a critical exception found trying to create a login profile for user: '" + str(name) + "'")
                 pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): " + str(err))
             
-            Output.all(new_user_login.password).apply(lambda v: pulumi.log.info("pylogger (" + str(datetime.datetime.now()) + "): new user password is: " + v[0]))
-
             # Export user information to the stack
             pulumi.export("new user password for '" + name + "'", new_user_login.password)
             pulumi.export("user " + name + " id", new_user.unique_id)
 
-            # Add the user to the list of administrators
-            self.output_usernames.append(new_user.name).apply(lambda v:v)
-
-            # Add the user arn to the list of arns
-            self.arns.append(new_user.arn.apply(lambda v:v))
-
-    # Static method to create the users from the provided iam list
-    def process_users(self, resource_dependency):
-
-        # Iterate through the list of usernames
-        for name in self.usernames["users"]:
-            
-            # Interrogate the aws cli using the name to determine if the user already has an aws user id
-            user_id = self.get_user_id_from_cli(name)
-
-            # Create the user
-            Output.all(user_id,name,resource_dependency).apply(lambda v: self.create_user(len(v[0]),v[1],v[2]))
+            # Send back the user object
+            return new_user
 
     # Static method to create an iam group for the users
     def create_group(self):
@@ -129,3 +112,21 @@ class users:
 
         # Return the output from the cli
         return user_awsid.stdout
+
+    # Method to create the users from the provided iam list
+    def process_users(self, resource_dependency):
+
+        # Iterate through the list of usernames
+        for name in self.usernames["users"]:
+            
+            # Interrogate the aws cli using the name to determine if the user already has an aws user id
+            user_id = self.get_user_id_from_cli(name)
+
+            # Create the user
+            new_user = Output.all(user_id,name,resource_dependency).apply(lambda v: self.create_user(len(v[0]),v[1],v[2]))
+
+            # Add the username to the list of usernames
+            self.output_usernames.append(new_user.name.apply(lambda v:v))
+
+            # Add the user arn to the list of arns
+            self.arns.append(new_user.arn.apply(lambda v:v))
