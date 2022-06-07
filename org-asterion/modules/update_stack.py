@@ -42,9 +42,7 @@ class UpdateStackAccount:
                 aws.iam.GetPolicyDocumentStatementArgs(
                     actions=[
                         "cloudwatch:*",
-                        "dynamodb:*",
-                        "ec2:*",
-                        "s3:*"
+                        "ec2:*"
                     ],
                     effect="Allow",
                     resources=[
