@@ -37,13 +37,30 @@ class UpdateStackAccount:
         # Define an inline policy document in the asterion stack account for resource permissions
         self.resource_policy = aws.iam.get_policy_document(
             statements=[
+
+                # Allow open permissions across common aws services
                 aws.iam.GetPolicyDocumentStatementArgs(
                     actions=[
+                        "cloudwatch:*",
                         "ec2:*"
                     ],
                     effect="Allow",
                     resources=[
-                        Output.concat("arn:aws:ec2::", self.stack_account_id,":*")
+                        Output.concat("arn:aws:dynamodb::", self.stack_account_id,":*"),
+                        Output.concat("arn:aws:ec2::", self.stack_account_id,":*"),
+                        Output.concat("arn:aws:s3:::*")
+                    ]
+                ),
+                # Grant read-only iam priviledges
+                aws.iam.GetPolicyDocumentStatementArgs(
+                    actions=[
+                        "iam:Get*",
+                        "iam:List*",
+                        "iam:Generate*"
+                    ],
+                    effect="Allow",
+                    resources=[
+                        Output.concat("*")
                     ]
                 )
             ],
@@ -72,11 +89,12 @@ class UpdateStackAccount:
                 provider=self.provider
             )
         )
-
+        
         # Create a new role in the asterion dev account 
         self.role = aws.iam.Role(
             "asterion-" + str(self.stack_environment) + "-admin-role",
             assume_role_policy=self.assume_role_policy.json,
+            name="administrator",
             inline_policies=[
                 aws.iam.RoleInlinePolicyArgs(
                     name="asterion-" + str(self.stack_environment) + "-resource-policy",
