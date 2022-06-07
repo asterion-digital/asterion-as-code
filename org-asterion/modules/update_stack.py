@@ -66,8 +66,6 @@ class UpdateStackAccount:
             )
         )
 
-        pulumi.export("Test outputting user arns", self.users.arns)
-
         # Define a policy document that allows the administrator role to be assumed
         self.assume_role_policy = aws.iam.get_policy_document(
             statements=[

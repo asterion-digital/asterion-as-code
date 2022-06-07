@@ -90,7 +90,7 @@ else:
         pulumi.log.info("PYLOGGER (" + str(datetime.datetime.now()) + "): " + str(err))
 
 # Create an aws iam assumerole policy and attach it to this account
-awspolicies.create_attach_assumerole_policy([Output.concat("arn:aws:iam::", account_id, ":role/administrator")], groupname)
+awspolicies.create_attach_policies([Output.concat("arn:aws:iam::", account_id, ":role/administrator")], groupname)
 
 # Set stack update object
 stack_update = update_stack.UpdateStackAccount(asterion_users)
