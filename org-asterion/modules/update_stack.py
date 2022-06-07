@@ -38,14 +38,19 @@ class UpdateStackAccount:
         self.resource_policy = aws.iam.get_policy_document(
             statements=[
 
-                # Grant open EC2 priviledges in stack account
+                # Allow open permissions across common aws services
                 aws.iam.GetPolicyDocumentStatementArgs(
                     actions=[
-                        "ec2:*"
+                        "cloudwatch:*",
+                        "dynamodb:*",
+                        "ec2:*",
+                        "s3:*"
                     ],
                     effect="Allow",
                     resources=[
-                        Output.concat("arn:aws:ec2::", self.stack_account_id,":*")
+                        Output.concat("arn:aws:dynamodb::", self.stack_account_id,":*"),
+                        Output.concat("arn:aws:ec2::", self.stack_account_id,":*"),
+                        Output.concat("arn:aws:s3:::*")
                     ]
                 ),
                 # Grant read-only iam priviledges
