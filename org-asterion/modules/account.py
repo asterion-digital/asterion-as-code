@@ -27,6 +27,7 @@ class account:
                 email="asterion-infra-aws-" + str(self.environment) + "@asterion.digital",
                 name="Asterion Infra-AWS " + str(self.environment.capitalize()) + " Team",
                 parent_id=self.parent_ou.id,
+                iam_user_access_to_billing="ALLOW",
                 opts=pulumi.ResourceOptions(
                     retain_on_delete=True
                 )
