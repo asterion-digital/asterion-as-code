@@ -33,20 +33,6 @@ pip install -r requirements.txt
 #+end_src
 
 
-* Create configuration
-
-Once our local environment is set up we can proceed with creating the required configuration entries in pulumi.
-
-The `newUsernames` config value can be a list seperated by the following characters: (;,.-%)
-
-#+NAME: Create required pulumi configuration
-#+begin_src tmate
-echo "<username1>,<username2>,<username3>" | pulumi config set newUsernames
-#+end_src
-
-If you didn't install AWS CLI as per previous instructions, you will need to configure pulumi with a [[https://www.pulumi.com/registry/packages/aws/installation-configuration/][few more details]].
-
-
 * Create stack and retrieve kubeconfig
 
 Once we have our local pulumi configuration set we can bring up the organizational stack.
@@ -59,6 +45,32 @@ pulumi up --yes
 #+end_src
 
 Asterion organization has now been deployed in aws! 🚀
+
+
+* Access aws accounts and switch roles
+
+You will need to [[https://asteriondigital.signin.aws.amazon.com/console][log in to the aws management console]] with one of the users listed in [[https://github.com/asterion-digital/asterion-as-code/tree/master/org-asterion/config][the appropriate pulumi configuration file]] and using the specific user password that will be output from the org-asterion pulumi stack. 
+
+Once logged in, create an access key and note both the access key id and secret access key id.
+
+Use `aws configure` and the access key information in the cli to set the access keys, region name, and default output type to a `default` profile in your `.aws/config` and `.aws/credentials` files.
+
+Appending the following to your aws config file will create a new cli profile to enable you to assume the administrator role in the asterion dev aws account:
+
+#+NAME: Modify aws configuration
+#+begin_src
+[profile asteriondev]
+region=ap-southeast-2
+output=json
+role_arn = arn:aws:iam::822258672282:role/administrator
+source_profile = default
+#+end_src
+
+You can swap between your `default` and `asteriondev` profiles by setting the `AWS_PROFILE` environment variable, e.g `export AWS_PROFILE=asteriondev`.
+
+You can check whether you've signed into your original iam user or have assumed the administrator role with the cli command `aws sts get-caller-identity`.
+
+And of course, you could also try switching roles in the aws console once logged in.
 
 
 * Teardown stack
