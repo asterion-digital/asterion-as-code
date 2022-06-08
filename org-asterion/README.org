@@ -49,13 +49,15 @@ Asterion organization has now been deployed in aws! 🚀
 
 * Access aws accounts and switch roles
 
-You will need to [[https://asteriondigital.signin.aws.amazon.com/console][log in to the aws management console]] with one of the users listed in [[https://github.com/asterion-digital/asterion-as-code/tree/master/org-asterion/config][the appropriate pulumi configuration file]] and using the specific user password that will be output from the org-asterion pulumi stack. 
+To be able to switch roles and access asterion aws accounts, you'll need to configure your aws profile by doing the following steps:
 
-Once logged in, create an access key and note both the access key id and secret access key id.
+1) [[https://asteriondigital.signin.aws.amazon.com/console][Log in to the aws management console]] with one of the users listed in [[https://github.com/asterion-digital/asterion-as-code/tree/master/org-asterion/config][the appropriate pulumi configuration file]] and using the specific user password that will be output from the org-asterion pulumi stack. 
 
-Use `aws configure` and the access key information in the cli to set the access keys, region name, and default output type to a `default` profile in your `.aws/config` and `.aws/credentials` files.
+2) Create an access key in the management console, and note both the access key id and secret access key id.
 
-Appending the following to your aws config file will create a new cli profile to enable you to assume the administrator role in the asterion dev aws account:
+3) Use ~aws configure~ and the access key information in the cli to set the access keys, region name, and default output type to a ~default~ profile in your ~.aws/config~ and ~.aws/credentials~ files.
+
+4) Append the following to your aws config file to create a new cli profile and assume the administrator role in the asterion dev aws account:
 
 #+NAME: Modify aws configuration
 #+begin_src
@@ -66,11 +68,9 @@ role_arn = arn:aws:iam::822258672282:role/administrator
 source_profile = default
 #+end_src
 
-You can swap between your `default` and `asteriondev` profiles by setting the `AWS_PROFILE` environment variable, e.g `export AWS_PROFILE=asteriondev`.
+Now, you can swap between your ~default~ and ~asteriondev~ profiles by setting the ~AWS_PROFILE~ environment variable, e.g ~export AWS_PROFILE=asteriondev~.
 
-You can check whether you've signed into your original iam user or have assumed the administrator role with the cli command `aws sts get-caller-identity`.
-
-And of course, you could also try switching roles in the aws console once logged in.
+Check whether you've signed into your original iam user or have assumed the administrator role with the cli command ~aws sts get-caller-identity~.
 
 
 * Teardown stack
