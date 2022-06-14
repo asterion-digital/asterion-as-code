@@ -36,10 +36,27 @@ def create_attach_policies(resources, groupname):
             # Allow administrators to view aws iam information
             aws.iam.GetPolicyDocumentStatementArgs(
                 actions=[
+                    "iam:CreateAccessKey",
                     "iam:Get*",
                     "iam:List*",
                     "iam:Generate*",
                     "organizations:List*"
+                ],
+                effect="Allow",
+                resources=["*"]
+            ),
+
+            # Allow administrators to view aws ec2 information
+            aws.iam.GetPolicyDocumentStatementArgs(
+                actions=[
+                    "ec2:Describe*",
+                    "ec2:Get*",
+                    "ec2:List*",
+                    "ec2:View*",
+                    "elasticloadbalancing:Describe*",
+                    "elasticloadbalancing:Get*",
+                    "elasticloadbalancing:List*",
+                    "elasticloadbalancing:View*"
                 ],
                 effect="Allow",
                 resources=["*"]
