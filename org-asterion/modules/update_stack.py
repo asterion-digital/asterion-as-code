@@ -42,13 +42,12 @@ class UpdateStackAccount:
                 aws.iam.GetPolicyDocumentStatementArgs(
                     actions=[
                         "cloudwatch:*",
-                        "ec2:*"
+                        "ec2:*",
+                        "elasticloadbalancing:*"
                     ],
                     effect="Allow",
                     resources=[
-                        Output.concat("arn:aws:dynamodb::", self.stack_account_id,":*"),
-                        Output.concat("arn:aws:ec2::", self.stack_account_id,":*"),
-                        Output.concat("arn:aws:s3:::*")
+                        "*"
                     ]
                 ),
                 # Grant read-only iam priviledges
@@ -60,7 +59,7 @@ class UpdateStackAccount:
                     ],
                     effect="Allow",
                     resources=[
-                        Output.concat("*")
+                        "*"
                     ]
                 )
             ],
@@ -80,6 +79,10 @@ class UpdateStackAccount:
                     principals=[
                         aws.iam.GetPolicyDocumentStatementPrincipalArgs(
                             identifiers=self.users.arns,
+                            type="AWS"
+                        ),
+                        aws.iam.GetPolicyDocumentStatementPrincipalArgs(
+                            identifiers=["arn:aws:iam::814941672613:user/administrator"],
                             type="AWS"
                         )
                     ]
