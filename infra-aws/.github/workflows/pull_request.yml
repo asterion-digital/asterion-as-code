@@ -16,6 +16,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-region: ${{ secrets.AWS_REGION }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_DEV_ROLE_ARN }}
+          role-duration-seconds: 1200
+          role-session-name: GithubActionsSession
       - run: pip install -r requirements.txt
         working-directory: infra-aws
       - uses: pulumi/actions@v3

