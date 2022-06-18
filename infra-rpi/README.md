@@ -261,8 +261,8 @@ reboot now
 <hr />
 
 
-## Install python 
-We must install Python to be able to use this repository with Pulumi, as it uses Python to define our infrastructure as code through Pulumi.
+## Install python dependencies
+We must install `venv` and `pip` to be able to use this repository with pulumi, as pulumi will use venv to run python compilers at runtime and pip to install python packages.
 
 To install Python, run:
 ```
