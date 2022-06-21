@@ -1,21 +1,26 @@
-"""A Kubernetes Python Pulumi program"""
+"""A pulumi program to deploy wordpress to kubernetes via helm on the asterion rpi server."""
 
 import pulumi
+import random
 from pulumi_kubernetes.apps.v1 import Deployment, DeploymentSpecArgs
+from pulumi_kubernetes.core.v1 import ContainerArgs,PodSpecArgs, PodTemplateSpecArgs
+from pulumi_kubernetes.helm.v3 import Release, ReleaseArgs, RepositoryOptsArgs, Chart, LocalChartOpts
+from pulumi_kubernetes.helm.v3.helm import ChartOpts
 from pulumi_kubernetes.meta.v1 import LabelSelectorArgs, ObjectMetaArgs
-from pulumi_kubernetes.core.v1 import ContainerArgs, PodSpecArgs, PodTemplateSpecArgs
 
-app_labels = { "app": "nginx" }
+# Get pulumi config
+config = pulumi.Config()
 
-deployment = Deployment(
-    "nginx",
-    spec=DeploymentSpecArgs(
-        selector=LabelSelectorArgs(match_labels=app_labels),
-        replicas=1,
-        template=PodTemplateSpecArgs(
-            metadata=ObjectMetaArgs(labels=app_labels),
-            spec=PodSpecArgs(containers=[ContainerArgs(name="nginx", image="nginx")])
-        ),
-    ))
+# Get infra stack
+rpiStack = pulumi.StackReference(config.require("rpiInfraStack"))
 
-pulumi.export("name", deployment.metadata["name"])
+# Get kubeconfig path
+kube_path = rpiStack.get_output("kube_path")
+
+# Deploy nginx helm chart pod
+nginx = Chart(
+    "asterion-infra-rpi-" + pulumi.get_stack() + "-nginx-ingress-controller",
+    LocalChartOpts(
+        path="./charts/ingress-nginx"
+    )
+)
