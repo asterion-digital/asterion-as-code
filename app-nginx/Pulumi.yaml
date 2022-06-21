@@ -1,0 +1,6 @@
+name: app-nginx
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: A pulumi stack to manage nginx deployments to kubernetes

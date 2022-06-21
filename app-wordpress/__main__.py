@@ -1,4 +1,4 @@
-"""A pulumi program to deploy asterion wordpress on kubernetes via helm."""
+"""A pulumi program to deploy wordpress to kubernetes via helm on the asterion rpi server."""
 
 import pulumi
 import random
