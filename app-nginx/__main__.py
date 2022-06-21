@@ -17,18 +17,10 @@ rpiStack = pulumi.StackReference(config.require("rpiInfraStack"))
 # Get kubeconfig path
 kube_path = rpiStack.get_output("kube_path")
 
-# Deploy mariadb helm chart pod
-mariadb = Chart(
-    "wpdev-mariadb",
+# Deploy nginx helm chart pod
+nginx = Chart(
+    "asterion-infra-rpi-" + pulumi.get_stack() + "-nginx-ingress-controller",
     LocalChartOpts(
-        path="./charts/mariadb"
-    )
-)
-
-# Deploy wordpress helm chart pod
-wordpress = Chart(
-    "wpdev-wordpress",
-    LocalChartOpts(
-        path="./charts/wordpress"
+        path="./charts/ingress-nginx"
     )
 )
