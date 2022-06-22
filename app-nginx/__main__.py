@@ -19,7 +19,7 @@ kube_path = rpiStack.get_output("kube_path")
 
 # Deploy nginx helm chart pod
 nginx = Chart(
-    "asterion-infra-rpi-" + pulumi.get_stack() + "-nginx",
+    "asterion-infra-rpi-" + pulumi.get_stack(),
     LocalChartOpts(
         path="./charts/ingress-nginx"
     )
