@@ -17,10 +17,22 @@ rpiStack = pulumi.StackReference(config.require("rpiInfraStack"))
 # Get kubeconfig path
 kube_path = rpiStack.get_output("kube_path")
 
-# Deploy nginx helm chart pod
+# Deploy local ingress-nginx helm chart
+# nginx = Chart(
+#     "asterion-infra-rpi-" + pulumi.get_stack(),
+#     LocalChartOpts(
+#         path="./charts/ingress-nginx"
+#     )
+# )
+
+# Deploy remote ingress-nginx helm chart
 nginx = Chart(
     "asterion-infra-rpi-" + pulumi.get_stack(),
-    LocalChartOpts(
-        path="./charts/ingress-nginx"
+    ChartOpts(
+        chart="nginx-ingress",
+        version="1.24.4",
+        fetch_opts=FetchOpts(
+            repo="https://charts.helm.sh/stable"
+        )
     )
 )
