@@ -29,9 +29,9 @@ nginx = Chart(
     "asterion-infra-rpi-" + pulumi.get_stack(),
     ChartOpts(
         chart="nginx-ingress",
-        version="1.24.4",
+        version="4.1.0",
         fetch_opts=FetchOpts(
-            repo="https://charts.helm.sh/stable"
+            repo="https://kubernetes.github.io/ingress-nginx/"
         )
     )
 )
