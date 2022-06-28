@@ -40,7 +40,11 @@ def create_attach_policies(resources, groupname):
                     "iam:Get*",
                     "iam:List*",
                     "iam:Generate*",
-                    "organizations:List*"
+                    "iam:Simulate*",
+                    "organizations:List*",
+                    "organizations:Describe*",
+                    "organizations:Get*",
+                    "organizations:View*"
                 ],
                 effect="Allow",
                 resources=["*"]
@@ -80,5 +84,3 @@ def create_attach_policies(resources, groupname):
             depends_on=[policy]
         )
     )
-
-# TODO: Allow admin users to be able to deploy all services in dev aws account
