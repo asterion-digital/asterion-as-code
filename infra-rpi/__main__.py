@@ -59,6 +59,7 @@ save_local_kubeconfig = command.local.Command(
 )
 
 # Export output to the terminal window
+pulumi.export('kube_path', '../asterion-infra-kubeconfig')
 pulumi.export('Infra server kubeconfig', output_kubeconfig.stdout)
 pulumi.export('Infra server public ip', server_ip_address)
 pulumi.export('github actions test', 'successful')
