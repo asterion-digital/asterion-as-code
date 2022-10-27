@@ -1,3 +1,0 @@
-name: app-ts-nginx
-runtime: nodejs
-description: NGINX-Ingress deployment to Kubernetes via Helm using Typescript
