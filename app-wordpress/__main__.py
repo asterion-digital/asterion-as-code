@@ -1,4 +1,4 @@
-"""A pulumi program to deploy wordpress to kubernetes via helm on the asterion rpi server."""
+"""A pulumi program to deploy wordpress to kubernetes via helm on the asterion infra."""
 
 import pulumi
 import random
@@ -11,11 +11,20 @@ from pulumi_kubernetes.meta.v1 import LabelSelectorArgs, ObjectMetaArgs
 # Get pulumi config
 config = pulumi.Config()
 
+# Get stack reference org
+stackRefInfraOrg = config.require("stackRefInfraOrg")
+
+# Set stack reference project
+stackRefInfraProject = config.require("stackRefInfraProject")
+
+# Get stack reference environment based upon app environment
+stackRefInfra = pulumi.get_stack()
+
 # Get infra stack
-rpiStack = pulumi.StackReference(config.require("rpiInfraStack"))
+rpiStackRef = pulumi.StackReference(f"{stackRefInfraOrg}/{stackRefInfraProject}/{stackRefInfra}")
 
 # Get kubeconfig path
-kube_path = rpiStack.get_output("kube_path")
+kube_path = rpiStackRef.get_output("kube_path")
 
 # Deploy mariadb helm chart pod
 mariadb = Chart(
@@ -32,3 +41,6 @@ wordpress = Chart(
         path="./charts/wordpress"
     )
 )
+
+# Export values to output
+pulumi.export('Kube path from RPI Infra stack', rpiStackRef.get_output("kube_path"))
