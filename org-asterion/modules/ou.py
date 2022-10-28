@@ -16,7 +16,7 @@ def create(name, parentid):
             parent_id=parentid,
             name="asterion-infra-aws" + name + "-ou"
         )
-
+        
         # Send back the ou pulumi output object
         return ou
 

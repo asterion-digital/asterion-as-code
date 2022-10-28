@@ -12,6 +12,7 @@ class UpdateStackAccount:
         # Define object attributes
         self.assume_role_policy = object
         self.master_account_id = Config().require("masterAccountId")
+        self.pass_role_policy = object
         self.provider = object
         self.region = Config("aws").require("region")
         self.resource_policy = object
@@ -38,24 +39,28 @@ class UpdateStackAccount:
         self.resource_policy = aws.iam.get_policy_document(
             statements=[
 
-                # Allow open permissions across common aws services
+                # Allow open permissions across common aws services and logging
                 aws.iam.GetPolicyDocumentStatementArgs(
                     actions=[
                         "cloudwatch:*",
                         "ec2:*",
-                        "elasticloadbalancing:*"
+                        "elasticloadbalancing:*",
+                        "lambda:*",
+                        "logs:*"
                     ],
                     effect="Allow",
                     resources=[
                         "*"
                     ]
                 ),
-                # Grant read-only iam priviledges
+                # Grant read-only iam privileges
                 aws.iam.GetPolicyDocumentStatementArgs(
                     actions=[
+                        "access-analyzer:List*",
                         "iam:Get*",
                         "iam:List*",
-                        "iam:Generate*"
+                        "iam:Generate*",
+                        "iam:Simulate*"
                     ],
                     effect="Allow",
                     resources=[
@@ -92,6 +97,24 @@ class UpdateStackAccount:
                 provider=self.provider
             )
         )
+
+        # Define a policy document that allows the administrator role to pass other roles to aws services
+        self.pass_role_policy = aws.iam.get_policy_document(
+            statements=[
+                aws.iam.GetPolicyDocumentStatementArgs(
+                    actions=[
+                        "iam:PassRole"
+                    ],
+                    effect="Allow",
+                    # User will be able to pass roles to all resources (services, users, roles, etc)
+                    # TODO: Update to allow PassRole to be applied to specific services
+                    resources=["*"]
+                )
+            ],
+            opts=pulumi.InvokeOptions(
+                provider=self.provider
+            )
+        )
         
         # Create a new role in the asterion dev account 
         self.role = aws.iam.Role(
@@ -102,6 +125,10 @@ class UpdateStackAccount:
                 aws.iam.RoleInlinePolicyArgs(
                     name="asterion-" + str(self.stack_environment) + "-resource-policy",
                     policy=self.resource_policy.json
+                ),
+                aws.iam.RoleInlinePolicyArgs(
+                    name="asterion-" + str(self.stack_environment) + "-pass-role-policy",
+                    policy=self.pass_role_policy.json
                 )
             ],
             opts=pulumi.ResourceOptions(
